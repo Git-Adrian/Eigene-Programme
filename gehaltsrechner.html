@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netto-Gehaltsrechner 2025</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 420px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.2rem;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 500;
+      color: #444;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.8rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #e8f4ff;
+      border-left: 5px solid #007bff;
+      border-radius: 8px;
+      color: #333;
+    }
+
+    .result strong {
+      display: block;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Netto-Gehaltsrechner 2025</h2>
+
+    <label for="jahresgehalt">Jahresbruttogehalt (€):</label>
+    <input type="number" id="jahresgehalt" placeholder="z. B. 60000" step="100" min="0">
+
+    <label for="gehaelter">Anzahl der Gehälter pro Jahr:</label>
+    <select id="gehaelter">
+      <option value="12">12 Gehälter</option>
+      <option value="13">13 Gehälter</option>
+      <option value="14">14 Gehälter</option>
+    </select>
+
+    <button onclick="berechneNetto()">Berechnen</button>
+
+    <div class="result" id="ergebnis" style="display:none;"></div>
+  </div>
+
+  <script>
+    function berechneNetto() {
+      const jahresgehalt = parseFloat(document.getElementById("jahresgehalt").value);
+      const gehaelter = parseInt(document.getElementById("gehaelter").value);
+      const ergebnisDiv = document.getElementById("ergebnis");
+
+      if (isNaN(jahresgehalt) || jahresgehalt <= 0) {
+        ergebnisDiv.style.display = "block";
+        ergebnisDiv.innerHTML = "❗ Bitte gib ein gültiges Jahresgehalt ein.";
+        return;
+      }
+
+      const bruttoMonat = jahresgehalt / gehaelter;
+
+      // Sozialversicherungsbeiträge 2025 – Arbeitnehmeranteile
+      const kranken = bruttoMonat * 0.089;     // Krankenversicherung (inkl. Ø Zusatzbeitrag)
+      const pflege = bruttoMonat * 0.023;      // Pflegeversicherung (für kinderlose über 23)
+      const rente = bruttoMonat * 0.093;       // Rentenversicherung
+      const arbeitslos = bruttoMonat * 0.013;  // Arbeitslosenversicherung
+      const unfall = 0; // Arbeitgeber zahlt allein
+
+      const gesamtAbzug = kranken + pflege + rente + arbeitslos + unfall;
+      const nettoMonat = bruttoMonat - gesamtAbzug;
+
+      ergebnisDiv.style.display = "block";
+      ergebnisDiv.innerHTML = `
+        <strong>Monatliches Bruttogehalt:</strong> ${bruttoMonat.toFixed(2)} €<br>
+        <strong>Abzüge (Sozialversicherung):</strong><br>
+        - Krankenversicherung (8,9 %): ${kranken.toFixed(2)} €<br>
+        - Pflegeversicherung (2,3 %): ${pflege.toFixed(2)} €<br>
+        - Rentenversicherung (9,3 %): ${rente.toFixed(2)} €<br>
+        - Arbeitslosenversicherung (1,3 %): ${arbeitslos.toFixed(2)} €<br>
+        <strong>Monatliches Nettogehalt:</strong> ${nettoMonat.toFixed(2)} €
+      `;
+    }
+  </script>
+</body>
+</html>
