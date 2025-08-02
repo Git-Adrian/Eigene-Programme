@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taschenrechner mit Tastatur</title>
+  <title>Taschenrechner mit Bruchumwandlung</title>
   <style>
     body {
       background-color: #f1f4f9;
@@ -19,7 +19,7 @@
       padding: 2rem;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      width: 360px;
+      width: 380px;
     }
     .display {
       width: 100%;
@@ -40,7 +40,7 @@
     }
     button {
       padding: 1rem;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       border: none;
       border-radius: 10px;
       cursor: pointer;
@@ -60,6 +60,9 @@
     .clear {
       background-color: #ff6b6b;
       color: white;
+    }
+    .convert {
+      background-color: #ffc107;
     }
   </style>
 </head>
@@ -92,8 +95,9 @@
       <button onclick="square()">x²</button>
       <button onclick="squareRoot()">√</button>
 
-      <button onclick="appendValue('%')">%</button>
-      <button class="equal" style="grid-column: span 3;" onclick="calculate()">=</button>
+      <button class="convert" onclick="toFraction()">→ Bruch</button>
+      <button class="convert" onclick="toDecimal()">→ Dezimal</button>
+      <button class="equal" style="grid-column: span 2;" onclick="calculate()">=</button>
     </div>
   </div>
 
@@ -115,7 +119,7 @@
     function square() {
       try {
         let value = evalExpression(display.textContent);
-        display.textContent = Math.pow(value, 2);
+        display.textContent = (value ** 2).toString();
       } catch {
         display.textContent = "Fehler";
       }
@@ -124,8 +128,8 @@
     function squareRoot() {
       try {
         let value = evalExpression(display.textContent);
-        if (value < 0) throw new Error("Wurzel aus negativ");
-        display.textContent = Math.sqrt(value);
+        if (value < 0) throw new Error("Negative Zahl");
+        display.textContent = Math.sqrt(value).toString();
       } catch {
         display.textContent = "Fehler";
       }
@@ -134,16 +138,64 @@
     function calculate() {
       try {
         let result = evalExpression(display.textContent);
-        if (!isFinite(result)) throw new Error("Nicht erlaubt");
-        display.textContent = result;
+        if (!isFinite(result)) throw new Error();
+        display.textContent = result.toString();
       } catch {
         display.textContent = "Fehler";
       }
     }
 
     function evalExpression(expr) {
-      const clean = expr.replace(/[^-()\d/*+.%]/g, '');
-      return Function(`"use strict"; return (${clean})`)();
+      const clean = expr.replace(/[^-()\d/*+.%.,]/g, '');
+      return Function('"use strict"; return (' + clean + ')')();
+    }
+
+    // Umwandlung in Bruch
+    function toFraction() {
+      try {
+        let value = parseFloat(evalExpression(display.textContent));
+        if (!isFinite(value)) throw new Error();
+        const frac = decimalToFraction(value);
+        display.textContent = frac;
+      } catch {
+        display.textContent = "Fehler";
+      }
+    }
+
+    // Umwandlung in Dezimal
+    function toDecimal() {
+      try {
+        const frac = display.textContent.trim();
+        if (frac.includes('/') && /^[\d.]+\/[\d.]+$/.test(frac)) {
+          const parts = frac.split('/');
+          const num = parseFloat(parts[0]);
+          const den = parseFloat(parts[1]);
+          if (den === 0) throw new Error();
+          display.textContent = (num / den).toString();
+        }
+      } catch {
+        display.textContent = "Fehler";
+      }
+    }
+
+    // Hilfsfunktion zur Bruchumrechnung
+    function decimalToFraction(decimal) {
+      const tolerance = 1.0E-8;
+      let h1 = 1, h2 = 0;
+      let k1 = 0, k2 = 1;
+      let b = decimal;
+      do {
+        let a = Math.floor(b);
+        let aux = h1;
+        h1 = a * h1 + h2;
+        h2 = aux;
+        aux = k1;
+        k1 = a * k1 + k2;
+        k2 = aux;
+        b = 1 / (b - a);
+      } while (Math.abs(decimal - h1 / k1) > decimal * tolerance);
+
+      return `${h1}/${k1}`;
     }
 
     // Tastaturunterstützung

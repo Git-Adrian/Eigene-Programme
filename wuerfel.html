@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Interaktiver 3D-Würfel</title>
+  <style>
+    body {
+      margin: 0;
+      background: #eef;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    .scene {
+      width: 300px;
+      height: 300px;
+      perspective: 1000px;
+    }
+
+    .cube {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-30deg) rotateY(30deg);
+      transition: transform 0.1s ease-out;
+    }
+
+    .face {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: white;
+      border: 2px solid #444;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 80px;
+    }
+
+    .front  { transform: rotateY(   0deg) translateZ(150px); }
+    .back   { transform: rotateY( 180deg) translateZ(150px); }
+    .right  { transform: rotateY(  90deg) translateZ(150px); }
+    .left   { transform: rotateY( -90deg) translateZ(150px); }
+    .top    { transform: rotateX(  90deg) translateZ(150px); }
+    .bottom { transform: rotateX( -90deg) translateZ(150px); }
+
+    .dot {
+      width: 20px;
+      height: 20px;
+      background: black;
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    /* Punktmuster für jede Seite */
+    .dots-1 .dot:nth-child(1) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+    .dots-2 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .dots-2 .dot:nth-child(2) { bottom: 25%; right: 25%; }
+
+    .dots-3 .dot:nth-child(1) { top: 20%; left: 20%; }
+    .dots-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .dots-3 .dot:nth-child(3) { bottom: 20%; right: 20%; }
+
+    .dots-4 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .dots-4 .dot:nth-child(2) { top: 25%; right: 25%; }
+    .dots-4 .dot:nth-child(3) { bottom: 25%; left: 25%; }
+    .dots-4 .dot:nth-child(4) { bottom: 25%; right: 25%; }
+
+    .dots-5 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .dots-5 .dot:nth-child(2) { top: 25%; right: 25%; }
+    .dots-5 .dot:nth-child(3) { bottom: 25%; left: 25%; }
+    .dots-5 .dot:nth-child(4) { bottom: 25%; right: 25%; }
+    .dots-5 .dot:nth-child(5) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+    .dots-6 .dot:nth-child(1) { top: 20%; left: 25%; }
+    .dots-6 .dot:nth-child(2) { top: 20%; right: 25%; }
+    .dots-6 .dot:nth-child(3) { top: 50%; left: 25%; transform: translateY(-50%); }
+    .dots-6 .dot:nth-child(4) { top: 50%; right: 25%; transform: translateY(-50%); }
+    .dots-6 .dot:nth-child(5) { bottom: 20%; left: 25%; }
+    .dots-6 .dot:nth-child(6) { bottom: 20%; right: 25%; }
+
+  </style>
+</head>
+<body>
+
+  <div class="scene">
+    <div class="cube" id="cube">
+      <div class="face front dots-1">
+        <div class="dot"></div>
+      </div>
+      <div class="face back dots-6">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="face right dots-3">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="face left dots-4">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="face top dots-5">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="face bottom dots-2">
+        <div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cube = document.getElementById("cube");
+
+    let isDragging = false;
+    let lastX, lastY;
+    let rotationX = -30;
+    let rotationY = 30;
+
+    document.addEventListener("mousedown", e => {
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+
+    document.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+
+      rotationY += dx * 0.5;
+      rotationX -= dy * 0.5;
+
+      cube.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+  </script>
+
+</body>
+</html>
