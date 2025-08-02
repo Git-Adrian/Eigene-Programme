@@ -2,11 +2,11 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Interaktiver 3D-Würfel</title>
+  <title>Realer 3D-Würfel</title>
   <style>
     body {
       margin: 0;
-      background: #eef;
+      background: radial-gradient(circle, #6e6e6e 0%, #2e2e2e 100%);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,9 +16,9 @@
     }
 
     .scene {
-      width: 300px;
-      height: 300px;
-      perspective: 1000px;
+      width: 250px;
+      height: 250px;
+      perspective: 1200px;
     }
 
     .cube {
@@ -32,41 +32,50 @@
 
     .face {
       position: absolute;
-      width: 300px;
-      height: 300px;
-      background: white;
-      border: 2px solid #444;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle at 30% 30%, #fff 0%, #ddd 100%);
+      border-radius: 12px;
+      box-shadow: inset -4px -4px 10px rgba(0,0,0,0.15), inset 4px 4px 10px rgba(255,255,255,0.2);
+      border: 2px solid rgba(0,0,0,0.1);
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 80px;
     }
 
-    .front  { transform: rotateY(   0deg) translateZ(150px); }
-    .back   { transform: rotateY( 180deg) translateZ(150px); }
-    .right  { transform: rotateY(  90deg) translateZ(150px); }
-    .left   { transform: rotateY( -90deg) translateZ(150px); }
-    .top    { transform: rotateX(  90deg) translateZ(150px); }
-    .bottom { transform: rotateX( -90deg) translateZ(150px); }
+    .face::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      pointer-events: none;
+    }
+
+    .front  { transform: rotateY(   0deg) translateZ(125px); }
+    .back   { transform: rotateY( 180deg) translateZ(125px); }
+    .right  { transform: rotateY(  90deg) translateZ(125px); }
+    .left   { transform: rotateY( -90deg) translateZ(125px); }
+    .top    { transform: rotateX(  90deg) translateZ(125px); }
+    .bottom { transform: rotateX( -90deg) translateZ(125px); }
 
     .dot {
       width: 20px;
       height: 20px;
-      background: black;
+      background: radial-gradient(circle, #000 0%, #333 100%);
       border-radius: 50%;
       position: absolute;
     }
 
-    /* Punktmuster für jede Seite */
+    /* Punkt-Layouts */
     .dots-1 .dot:nth-child(1) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-    .dots-2 .dot:nth-child(1) { top: 25%; left: 25%; }
-    .dots-2 .dot:nth-child(2) { bottom: 25%; right: 25%; }
+    .dots-2 .dot:nth-child(1) { top: 30%; left: 30%; }
+    .dots-2 .dot:nth-child(2) { bottom: 30%; right: 30%; }
 
-    .dots-3 .dot:nth-child(1) { top: 20%; left: 20%; }
+    .dots-3 .dot:nth-child(1) { top: 25%; left: 25%; }
     .dots-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .dots-3 .dot:nth-child(3) { bottom: 20%; right: 20%; }
+    .dots-3 .dot:nth-child(3) { bottom: 25%; right: 25%; }
 
     .dots-4 .dot:nth-child(1) { top: 25%; left: 25%; }
     .dots-4 .dot:nth-child(2) { top: 25%; right: 25%; }
@@ -92,9 +101,7 @@
 
   <div class="scene">
     <div class="cube" id="cube">
-      <div class="face front dots-1">
-        <div class="dot"></div>
-      </div>
+      <div class="face front dots-1"><div class="dot"></div></div>
       <div class="face back dots-6">
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -122,7 +129,7 @@
     let rotationX = -30;
     let rotationY = 30;
 
-    document.addEventListener("mousedown", e => {
+    document.addEventListener("mousedown", (e) => {
       isDragging = true;
       lastX = e.clientX;
       lastY = e.clientY;
@@ -132,7 +139,7 @@
       isDragging = false;
     });
 
-    document.addEventListener("mousemove", e => {
+    document.addEventListener("mousemove", (e) => {
       if (!isDragging) return;
 
       const dx = e.clientX - lastX;
