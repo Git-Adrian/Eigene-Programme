@@ -126,7 +126,7 @@
 
       if (result !== null && !isNaN(result)) {
         const gerundet = Number.isInteger(result) ? result : result.toFixed(2);
-        output.textContent = `🧠 Fehlender Wert: ${gerundet}`;
+        output.textContent = `🧐 Fehlender Wert: ${gerundet}`;
       } else {
         output.textContent = "❗ Kein klares Muster erkannt.";
       }
@@ -135,18 +135,15 @@
     function findeWert(zahlen, ziel) {
       const reihen = [];
 
-      // Zeilen
       for (let r = 0; r < matrixSize; r++) {
         const start = r * matrixSize;
         reihen.push(Array.from({ length: matrixSize }, (_, i) => start + i));
       }
 
-      // Spalten
       for (let c = 0; c < matrixSize; c++) {
         reihen.push(Array.from({ length: matrixSize }, (_, i) => c + i * matrixSize));
       }
 
-      // Diagonalen (nur bei quadratischer Matrix sinnvoll)
       if (matrixSize === 3 || matrixSize === 4 || matrixSize === 5) {
         reihen.push(Array.from({ length: matrixSize }, (_, i) => i * (matrixSize + 1)));
         reihen.push(Array.from({ length: matrixSize }, (_, i) => (i + 1) * (matrixSize - 1)));
@@ -163,7 +160,6 @@
 
         const [a, b, c] = werte;
 
-        // Regelversuche
         if (idx === 2 && a !== null && b !== null) return a + b;
         if (idx === 0 && b !== null && c !== null) return c - b;
         if (idx === 1 && a !== null && c !== null) return (a + c) / 2;
@@ -174,7 +170,6 @@
       return null;
     }
 
-    // Initiale Matrix
     createMatrix();
   </script>
 </body>

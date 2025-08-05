@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taschenrechner mit Bruchumwandlung</title>
+  <title>Taschenrechner mit gemischten Zahlen & Prozentrechnung</title>
   <style>
     body {
       background-color: #f1f4f9;
@@ -19,7 +19,7 @@
       padding: 2rem;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      width: 380px;
+      width: 400px;
     }
     .display {
       width: 100%;
@@ -91,94 +91,175 @@
       <button class="operator" onclick="appendValue('+')">+</button>
 
       <button onclick="appendValue('0')">0</button>
-      <button onclick="appendValue('.')">.</button>
+      <button onclick="appendValue(',')">,</button>
       <button onclick="square()">x²</button>
       <button onclick="squareRoot()">√</button>
 
       <button class="convert" onclick="toFraction()">→ Bruch</button>
       <button class="convert" onclick="toDecimal()">→ Dezimal</button>
-      <button class="equal" style="grid-column: span 2;" onclick="calculate()">=</button>
+      <button class="convert" onclick="toMixed()">→ Gemischt</button>
+      <button class="operator" onclick="appendValue('%')">%</button>
+
+      <button class="equal" onclick="calculate()">=</button>
     </div>
   </div>
 
   <script>
     const display = document.getElementById('display');
+    let rawInput = '';
+    let shouldResetDisplay = false;
 
     function appendValue(val) {
-      if (display.textContent === '0' || display.textContent === 'Fehler') {
-        display.textContent = val;
+      if (display.textContent === '0' || display.textContent === 'Fehler' || shouldResetDisplay) {
+        rawInput = val;
       } else {
-        display.textContent += val;
+        rawInput += val;
       }
+      shouldResetDisplay = false;
+      updateDisplay();
     }
 
     function clearDisplay() {
+      rawInput = '';
       display.textContent = '0';
+      shouldResetDisplay = false;
+    }
+
+    function updateDisplay() {
+      const formatted = rawInput.replace(/\d+([,]\d+)?/g, match => formatNumberString(match));
+      display.textContent = formatted || '0';
+    }
+
+    function formatNumberString(str) {
+      const [intPart, decPart] = str.split(',');
+      if (!intPart) return str;
+      const intFormatted = parseInt(intPart, 10).toLocaleString('de-DE');
+      return decPart ? `${intFormatted},${decPart}` : intFormatted;
+    }
+
+    function formatNumber(number) {
+      return number.toLocaleString('de-DE', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 10
+      });
+    }
+
+    function preprocessMixedNumbers(expr) {
+      return expr.replace(/(\d+)\s+(\d+\/\d+)/g, (_, whole, fraction) => {
+        return `${whole}+${fraction}`;
+      });
+    }
+
+    function processPercent(expr) {
+      return expr.replace(/(\d+(?:[.,]\d+)?)(\s*[%])/g, (_, number) => {
+        const normalized = number.replace(',', '.');
+        return `(${normalized} / 100)`;
+      });
+    }
+
+    function evalExpression(expr) {
+      let clean = expr
+        .replace(/\./g, '') // Tausenderpunkte entfernen
+        .replace(/,/g, '.'); // Komma in Punkt
+
+      clean = preprocessMixedNumbers(clean);
+      clean = processPercent(clean); // Prozent umwandeln
+      clean = clean.replace(/[^-()\d/*+.%]/g, '');
+
+      return Function('"use strict"; return (' + clean + ')')();
+    }
+
+    function calculate() {
+      try {
+        let result = evalExpression(rawInput);
+        if (!isFinite(result)) throw new Error();
+        display.textContent = formatNumber(result);
+        rawInput = result.toString().replace('.', ',');
+        shouldResetDisplay = true;
+      } catch {
+        display.textContent = "Fehler";
+        rawInput = '';
+        shouldResetDisplay = true;
+      }
     }
 
     function square() {
       try {
-        let value = evalExpression(display.textContent);
-        display.textContent = (value ** 2).toString();
+        let value = evalExpression(rawInput);
+        display.textContent = formatNumber(value ** 2);
+        rawInput = (value ** 2).toString().replace('.', ',');
+        shouldResetDisplay = true;
       } catch {
         display.textContent = "Fehler";
+        rawInput = '';
+        shouldResetDisplay = true;
       }
     }
 
     function squareRoot() {
       try {
-        let value = evalExpression(display.textContent);
+        let value = evalExpression(rawInput);
         if (value < 0) throw new Error("Negative Zahl");
-        display.textContent = Math.sqrt(value).toString();
+        display.textContent = formatNumber(Math.sqrt(value));
+        rawInput = Math.sqrt(value).toString().replace('.', ',');
+        shouldResetDisplay = true;
       } catch {
         display.textContent = "Fehler";
+        rawInput = '';
+        shouldResetDisplay = true;
       }
     }
 
-    function calculate() {
-      try {
-        let result = evalExpression(display.textContent);
-        if (!isFinite(result)) throw new Error();
-        display.textContent = result.toString();
-      } catch {
-        display.textContent = "Fehler";
-      }
-    }
-
-    function evalExpression(expr) {
-      const clean = expr.replace(/[^-()\d/*+.%.,]/g, '');
-      return Function('"use strict"; return (' + clean + ')')();
-    }
-
-    // Umwandlung in Bruch
     function toFraction() {
       try {
-        let value = parseFloat(evalExpression(display.textContent));
+        let value = parseFloat(evalExpression(rawInput));
         if (!isFinite(value)) throw new Error();
         const frac = decimalToFraction(value);
         display.textContent = frac;
+        rawInput = frac;
+        shouldResetDisplay = true;
       } catch {
         display.textContent = "Fehler";
+        rawInput = '';
+        shouldResetDisplay = true;
       }
     }
 
-    // Umwandlung in Dezimal
+    function toMixed() {
+      try {
+        let value = parseFloat(evalExpression(rawInput));
+        if (!isFinite(value)) throw new Error();
+        const mixed = toMixedNumber(value);
+        display.textContent = mixed;
+        rawInput = mixed;
+        shouldResetDisplay = true;
+      } catch {
+        display.textContent = "Fehler";
+        rawInput = '';
+        shouldResetDisplay = true;
+      }
+    }
+
     function toDecimal() {
       try {
-        const frac = display.textContent.trim();
-        if (frac.includes('/') && /^[\d.]+\/[\d.]+$/.test(frac)) {
-          const parts = frac.split('/');
+        const frac = rawInput.trim();
+        if (frac.includes('/') && /^[\d.,]+\/[\d.,]+$/.test(frac)) {
+          const parts = frac.replace(/\./g, '').replace(/,/g, '.').split('/');
           const num = parseFloat(parts[0]);
           const den = parseFloat(parts[1]);
           if (den === 0) throw new Error();
-          display.textContent = (num / den).toString();
+          const result = num / den;
+          display.textContent = formatNumber(result);
+          rawInput = result.toString().replace('.', ',');
+          shouldResetDisplay = true;
         }
       } catch {
         display.textContent = "Fehler";
+        rawInput = '';
+        shouldResetDisplay = true;
       }
     }
 
-    // Hilfsfunktion zur Bruchumrechnung
     function decimalToFraction(decimal) {
       const tolerance = 1.0E-8;
       let h1 = 1, h2 = 0;
@@ -194,24 +275,33 @@
         k2 = aux;
         b = 1 / (b - a);
       } while (Math.abs(decimal - h1 / k1) > decimal * tolerance);
-
       return `${h1}/${k1}`;
     }
 
-    // Tastaturunterstützung
+    function toMixedNumber(decimal) {
+      const whole = Math.floor(decimal);
+      const remainder = decimal - whole;
+      if (remainder < 1e-8) return whole.toString();
+      const frac = decimalToFraction(remainder);
+      return `${whole} ${frac}`;
+    }
+
     document.addEventListener("keydown", function(e) {
       const key = e.key;
-      if (!isNaN(key) || ['+', '-', '*', '/', '.', '%', '(', ')'].includes(key)) {
+      if (!isNaN(key) || ['+', '-', '*', '/', '%', '(', ')'].includes(key)) {
         appendValue(key);
+      } else if (key === ',' || key === '.') {
+        appendValue(',');
       } else if (key === 'Enter' || key === '=') {
         e.preventDefault();
         calculate();
       } else if (key === 'Backspace') {
-        if (display.textContent.length > 1) {
-          display.textContent = display.textContent.slice(0, -1);
+        if (rawInput.length > 1) {
+          rawInput = rawInput.slice(0, -1);
         } else {
-          clearDisplay();
+          rawInput = '';
         }
+        updateDisplay();
       } else if (key.toLowerCase() === 'r') {
         squareRoot();
       } else if (key === '^') {
