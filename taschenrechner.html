@@ -157,6 +157,36 @@
       });
     }
 
+    function autoBracketExpression(expr) {
+      const tokens = expr.match(/(\d+(?:[.,]\d+)?|\+|\-|\*|\/|\(|\)|%)/g);
+      if (!tokens) return expr;
+
+      const output = [];
+      let i = 0;
+
+      while (i < tokens.length) {
+        if ((tokens[i] === '+' || tokens[i] === '-') && i + 3 < tokens.length) {
+          const a = tokens[i + 1];
+          const op = tokens[i + 2];
+          const b = tokens[i + 3];
+          if ((op === '*' || op === '/')) {
+            output.push(tokens[i]);
+            output.push('(');
+            output.push(a);
+            output.push(op);
+            output.push(b);
+            output.push(')');
+            i += 4;
+            continue;
+          }
+        }
+        output.push(tokens[i]);
+        i++;
+      }
+
+      return output.join('');
+    }
+
     function evalExpression(expr) {
       let clean = expr
         .replace(/\./g, '') // Tausenderpunkte entfernen
@@ -164,6 +194,7 @@
 
       clean = preprocessMixedNumbers(clean);
       clean = processPercent(clean); // Prozent umwandeln
+      clean = autoBracketExpression(clean); // Punkt-vor-Strich Klammern
       clean = clean.replace(/[^-()\d/*+.%]/g, '');
 
       return Function('"use strict"; return (' + clean + ')')();

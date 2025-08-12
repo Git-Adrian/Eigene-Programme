@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalender mit NRW-Feiertagen & Aufgaben (Offline)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    .calendar-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      max-width: 800px;
+      width: 100%;
+      padding: 2rem;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .calendar-header h2 { margin: 0; font-size: 1.5rem; color: #333; }
+    .nav-buttons button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0 0.2rem;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .nav-buttons button:hover { background: #0056b3; }
+    .calendar {
+      display: grid;
+      grid-template-columns: 3rem repeat(7, 1fr);
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .calendar div {
+      padding: 1rem 0.5rem;
+      text-align: center;
+      border-radius: 8px;
+      transition: background 0.3s;
+      position: relative;
+    }
+    .day-header { font-weight: bold; color: #555; background-color: #f0f0f0; }
+    .today { background-color: #d3d3d3 !important; font-weight: bold; }
+    .weekend { background-color: #ffeaea; }
+    .holiday { background-color: #ffe5b4 !important; }
+    .week-number { background-color: #eaeaea; font-weight: bold; color: #666; }
+    .calendar div:hover:not(.day-header):not(.week-number) {
+      background-color: #e8f0fe;
+      cursor: pointer;
+    }
+    .holiday-label {
+      font-size: 0.6rem;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      color: #a65e00;
+    }
+    .task-dot {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 6px;
+      height: 6px;
+      background: #ff5722;
+      border-radius: 50%;
+    }
+    @media (max-width: 600px) {
+      .calendar { font-size: 0.8rem; }
+      .calendar-container { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <div class="nav-buttons">
+        <button id="prevYear">«</button>
+        <button id="prevMonth">‹</button>
+      </div>
+      <h2 id="monthYear"></h2>
+      <div class="nav-buttons">
+        <button id="nextMonth">›</button>
+        <button id="nextYear">»</button>
+      </div>
+    </div>
+    <div class="calendar" id="calendar"></div>
+  </div>
+
+  <script>
+    const calendarEl = document.getElementById("calendar");
+    const monthYearEl = document.getElementById("monthYear");
+
+    const now = new Date();
+    let currentMonth = now.getMonth();
+    let currentYear = now.getFullYear();
+
+    const monthNames = [
+      "Januar", "Februar", "März", "April", "Mai", "Juni",
+      "Juli", "August", "September", "Oktober", "November", "Dezember"
+    ];
+
+    // -----------------------
+    // Feiertage NRW Offline
+    // -----------------------
+    function getNRWFeiertage(year) {
+      const easter = calcEaster(year);
+      const feiertage = {};
+      function add(date, name) {
+        feiertage[date.toISOString().slice(0,10)] = name;
+      }
+
+      // Feste Feiertage
+      add(new Date(year, 0, 1), "Neujahr");
+      add(new Date(year, 4, 1), "Tag der Arbeit");
+      add(new Date(year, 9, 3), "Tag der Deutschen Einheit");
+      add(new Date(year, 11, 25), "1. Weihnachtstag");
+      add(new Date(year, 11, 26), "2. Weihnachtstag");
+
+      // Bewegliche Feiertage
+      add(shiftDate(easter, -2), "Karfreitag");
+      add(shiftDate(easter, 1), "Ostermontag");
+      add(shiftDate(easter, 39), "Christi Himmelfahrt");
+      add(shiftDate(easter, 50), "Pfingstmontag");
+      add(shiftDate(easter, 60), "Fronleichnam");
+
+      return feiertage;
+    }
+
+    function calcEaster(Y) {
+      const C = Math.floor(Y/100);
+      const N = Y - 19 * Math.floor(Y/19);
+      const K = Math.floor((C - 17)/25);
+      let I = C - Math.floor(C/4) - Math.floor((C-K)/3) + 19*N + 15;
+      I = I - 30 * Math.floor(I/30);
+      I = I - Math.floor(I/28) * (1 - Math.floor(I/28) * Math.floor(29/(I+1)) * Math.floor((21-N)/11));
+      let J = Y + Math.floor(Y/4) + I + 2 - C + Math.floor(C/4);
+      J = J - 7 * Math.floor(J/7);
+      const L = I - J;
+      const M = 3 + Math.floor((L + 40)/44);
+      const D = L + 28 - 31 * Math.floor(M/4);
+      return new Date(Y, M-1, D);
+    }
+
+    function shiftDate(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    // -----------------------
+    // Aufgaben / Termine
+    // -----------------------
+    const tasksKey = "calendarTasks";
+    const tasks = JSON.parse(localStorage.getItem(tasksKey)) || {};
+    let holidays = {};
+
+    function getWeekNumber(date) {
+      const tmp = new Date(date.getTime());
+      tmp.setHours(0, 0, 0, 0);
+      tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
+      const week1 = new Date(tmp.getFullYear(), 0, 4);
+      return (
+        1 + Math.round(((tmp - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+      );
+    }
+
+    function renderCalendar() {
+      calendarEl.innerHTML = "";
+      monthYearEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+      holidays = getNRWFeiertage(currentYear);
+
+      const headers = ["KW", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+      headers.forEach((h) => {
+        const div = document.createElement("div");
+        div.className = "day-header";
+        div.textContent = h;
+        calendarEl.appendChild(div);
+      });
+
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      const startDay = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      let d = 1 - startDay;
+      const totalCells = Math.ceil((startDay + daysInMonth) / 7) * 7;
+
+      for (let i = 0; i < totalCells / 7; i++) {
+        const weekDate = new Date(currentYear, currentMonth, d > 0 ? d : 1);
+        const weekNum = getWeekNumber(weekDate);
+        const weekDiv = document.createElement("div");
+        weekDiv.className = "week-number";
+        weekDiv.textContent = weekNum;
+        calendarEl.appendChild(weekDiv);
+
+        for (let j = 0; j < 7; j++) {
+          const cell = document.createElement("div");
+          if (d > 0 && d <= daysInMonth) {
+            cell.textContent = d;
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+
+            if (d === now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear()) {
+              cell.classList.add("today");
+            }
+            if (j === 5 || j === 6) cell.classList.add("weekend");
+
+            if (holidays[dateStr]) {
+              cell.classList.add("holiday");
+              const label = document.createElement("div");
+              label.className = "holiday-label";
+              label.textContent = holidays[dateStr];
+              cell.appendChild(label);
+            }
+
+            if (tasks[dateStr]) {
+              const dot = document.createElement("div");
+              dot.className = "task-dot";
+              cell.appendChild(dot);
+            }
+
+            cell.addEventListener("click", () => {
+              const input = prompt(`Termin/Aufgabe für ${dateStr}:`, tasks[dateStr] || "");
+              if (input === null) return;
+              if (input.trim()) {
+                tasks[dateStr] = input.trim();
+              } else {
+                delete tasks[dateStr];
+              }
+              localStorage.setItem(tasksKey, JSON.stringify(tasks));
+              renderCalendar();
+            });
+          }
+          calendarEl.appendChild(cell);
+          d++;
+        }
+      }
+    }
+
+    document.getElementById("prevMonth").onclick = () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar();
+    };
+
+    document.getElementById("nextMonth").onclick = () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    };
+
+    document.getElementById("prevYear").onclick = () => {
+      currentYear--;
+      renderCalendar();
+    };
+
+    document.getElementById("nextYear").onclick = () => {
+      currentYear++;
+      renderCalendar();
+    };
+
+    renderCalendar();
+  </script>
+</body>
+</html>
