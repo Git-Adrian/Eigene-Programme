@@ -21,7 +21,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 420px;
+      max-width: 460px;
     }
 
     h2 {
@@ -75,14 +75,24 @@
       display: block;
       margin-top: 0.5rem;
     }
+
+    .divider {
+      margin: 2rem 0 1rem;
+      text-align: center;
+      font-weight: bold;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Netto-Gehaltsrechner 2025</h2>
 
+    <!-- Variante 1: Jahresgehalt -->
     <label for="jahresgehalt">Jahresbruttogehalt (€):</label>
-    <input type="number" id="jahresgehalt" placeholder="z. B. 60000" step="100" min="0">
+    <input type="number" id="jahresgehalt" placeholder="z. B. 60000" step="100" min="0">
 
     <label for="gehaelter">Anzahl der Gehälter pro Jahr:</label>
     <select id="gehaelter">
@@ -91,7 +101,42 @@
       <option value="14">14 Gehälter</option>
     </select>
 
+    <label for="steuerklasse">Steuerklasse:</label>
+    <select id="steuerklasse">
+      <option value="1">I</option>
+      <option value="2">II</option>
+      <option value="3">III</option>
+      <option value="4">IV</option>
+      <option value="5">V</option>
+      <option value="6">VI</option>
+    </select>
+
     <button onclick="berechneNetto()">Berechnen</button>
+
+    <div class="divider">oder</div>
+
+    <!-- Variante 2: Monatsgehalt -->
+    <label for="monatsgehalt">Monatsbruttogehalt (€):</label>
+    <input type="number" id="monatsgehalt" placeholder="z. B. 4000" step="50" min="0">
+
+    <label for="gehaelter2">Anzahl der Gehälter pro Jahr:</label>
+    <select id="gehaelter2">
+      <option value="12">12 Gehälter</option>
+      <option value="13">13 Gehälter</option>
+      <option value="14">14 Gehälter</option>
+    </select>
+
+    <label for="steuerklasse2">Steuerklasse:</label>
+    <select id="steuerklasse2">
+      <option value="1">I</option>
+      <option value="2">II</option>
+      <option value="3">III</option>
+      <option value="4">IV</option>
+      <option value="5">V</option>
+      <option value="6">VI</option>
+    </select>
+
+    <button onclick="berechneNettoVonMonat()">Berechnen</button>
 
     <div class="result" id="ergebnis" style="display:none;"></div>
   </div>
@@ -100,6 +145,7 @@
     function berechneNetto() {
       const jahresgehalt = parseFloat(document.getElementById("jahresgehalt").value);
       const gehaelter = parseInt(document.getElementById("gehaelter").value);
+      const steuerklasse = parseInt(document.getElementById("steuerklasse").value);
       const ergebnisDiv = document.getElementById("ergebnis");
 
       if (isNaN(jahresgehalt) || jahresgehalt <= 0) {
@@ -109,25 +155,62 @@
       }
 
       const bruttoMonat = jahresgehalt / gehaelter;
+      zeigeBerechnung(bruttoMonat, gehaelter, steuerklasse, ergebnisDiv, jahresgehalt);
+    }
 
+    function berechneNettoVonMonat() {
+      const monatsgehalt = parseFloat(document.getElementById("monatsgehalt").value);
+      const gehaelter = parseInt(document.getElementById("gehaelter2").value);
+      const steuerklasse = parseInt(document.getElementById("steuerklasse2").value);
+      const ergebnisDiv = document.getElementById("ergebnis");
+
+      if (isNaN(monatsgehalt) || monatsgehalt <= 0) {
+        ergebnisDiv.style.display = "block";
+        ergebnisDiv.innerHTML = "❗ Bitte gib ein gültiges Monatsgehalt ein.";
+        return;
+      }
+
+      const jahresgehalt = monatsgehalt * gehaelter;
+      zeigeBerechnung(monatsgehalt, gehaelter, steuerklasse, ergebnisDiv, jahresgehalt);
+    }
+
+    function berechneSteuer(brutto, steuerklasse) {
+      // Vereinfachte Annäherung für Steuerklassen (nicht 100% exakt!)
+      let steuerSatz;
+      switch (steuerklasse) {
+        case 1: steuerSatz = 0.20; break; // ledig
+        case 2: steuerSatz = 0.18; break; // alleinerziehend
+        case 3: steuerSatz = 0.10; break; // verheiratet, Hauptverdiener
+        case 4: steuerSatz = 0.20; break; // verheiratet, beide ähnlich
+        case 5: steuerSatz = 0.30; break; // verheiratet, Zweitverdiener
+        case 6: steuerSatz = 0.40; break; // mehrere Jobs
+        default: steuerSatz = 0.20;
+      }
+      return brutto * steuerSatz;
+    }
+
+    function zeigeBerechnung(bruttoMonat, gehaelter, steuerklasse, ergebnisDiv, jahresgehalt = null) {
       // Sozialversicherungsbeiträge 2025 – Arbeitnehmeranteile
-      const kranken = bruttoMonat * 0.089;     // Krankenversicherung (inkl. Ø Zusatzbeitrag)
-      const pflege = bruttoMonat * 0.023;      // Pflegeversicherung (für kinderlose über 23)
-      const rente = bruttoMonat * 0.093;       // Rentenversicherung
-      const arbeitslos = bruttoMonat * 0.013;  // Arbeitslosenversicherung
-      const unfall = 0; // Arbeitgeber zahlt allein
+      const kranken = bruttoMonat * 0.089;
+      const pflege = bruttoMonat * 0.023;
+      const rente = bruttoMonat * 0.093;
+      const arbeitslos = bruttoMonat * 0.013;
 
-      const gesamtAbzug = kranken + pflege + rente + arbeitslos + unfall;
+      const steuer = berechneSteuer(bruttoMonat, steuerklasse);
+
+      const gesamtAbzug = kranken + pflege + rente + arbeitslos + steuer;
       const nettoMonat = bruttoMonat - gesamtAbzug;
 
       ergebnisDiv.style.display = "block";
       ergebnisDiv.innerHTML = `
+        ${jahresgehalt ? `<strong>Jahresbruttogehalt:</strong> ${jahresgehalt.toFixed(2)} €<br>` : ""}
         <strong>Monatliches Bruttogehalt:</strong> ${bruttoMonat.toFixed(2)} €<br>
-        <strong>Abzüge (Sozialversicherung):</strong><br>
-        - Krankenversicherung (8,9 %): ${kranken.toFixed(2)} €<br>
-        - Pflegeversicherung (2,3 %): ${pflege.toFixed(2)} €<br>
-        - Rentenversicherung (9,3 %): ${rente.toFixed(2)} €<br>
-        - Arbeitslosenversicherung (1,3 %): ${arbeitslos.toFixed(2)} €<br>
+        <strong>Abzüge:</strong><br>
+        - Krankenversicherung (8,9 %): ${kranken.toFixed(2)} €<br>
+        - Pflegeversicherung (2,3 %): ${pflege.toFixed(2)} €<br>
+        - Rentenversicherung (9,3 %): ${rente.toFixed(2)} €<br>
+        - Arbeitslosenversicherung (1,3 %): ${arbeitslos.toFixed(2)} €<br>
+        - Lohnsteuer (Klasse ${steuerklasse}): ${steuer.toFixed(2)} €<br>
         <strong>Monatliches Nettogehalt:</strong> ${nettoMonat.toFixed(2)} €
       `;
     }

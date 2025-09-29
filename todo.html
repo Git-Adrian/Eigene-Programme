@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Moderne ToDo App mit Erinnerungen</title>
+
+<!-- FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(-45deg, #74ABE2, #5563DE, #6dd5ed, #2193b0);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  @keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+  }
+
+  .container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    padding: 0;
+    width: 100%;
+    max-width: 1100px;
+    overflow: hidden;
+  }
+
+  .header {
+    background: #5563DE;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+  .header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  h1 { margin: 0; font-size: 1.6rem; }
+
+  .content {
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Input-Formular */
+  .input-form {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .input-form input, .input-form select {
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  .input-form input:focus, .input-form select:focus {
+    border-color: #5563DE;
+    outline: none;
+  }
+
+  button {
+    background: #5563DE;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+  }
+  button:hover { background: #4450b0; }
+  button:active { transform: scale(0.95); }
+
+  /* Layout: Liste + Kalender nebeneinander */
+  .views {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    flex-wrap: wrap;
+  }
+  .list-view, .calendar-view {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+  }
+  li {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #eee;
+    flex-wrap: wrap;
+    transition: all 0.3s ease;
+  }
+
+  .todo-info { flex: 1; min-width: 200px; }
+  .todo-title { font-weight: bold; }
+  .todo-date { font-size: 0.85rem; color: #666; }
+
+  .status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+  .status-offen { background: #ffefc1; color: #a67c00; }
+  .status-erledigt { background: #c1ffd7; color: #006633; }
+
+  .actions button { margin-left: 5px; padding: 6px 8px; font-size: 0.9rem; }
+
+  .overdue { border-color: #ff4d4d !important; background: #ffe5e5 !important; }
+
+  .filter-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-container label { font-weight: bold; }
+
+  /* Wochenenden hellgrau */
+  .weekend-day {
+    background-color: #f0f0f0 !important;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://image.pngaaa.com/561/898561-middle.png" alt="Logo" />
+      <h1>Meine To-Do's</h1>
+    </div>
+    <div class="content">
+      <div style="flex:1 1 100%;">
+        <button id="show-form-btn">➕ Hinzufügen</button>
+        <div class="input-form" id="input-form">
+          <input type="text" id="todo-input" placeholder="Titel eingeben..." />
+          <input type="date" id="todo-date" />
+          <div style="display:flex; gap:10px;">
+            <input type="time" id="todo-start" /> 
+            <input type="time" id="todo-end" />
+          </div>
+          <select id="todo-status">
+            <option value="offen">Offen</option>
+            <option value="erledigt">Erledigt</option>
+          </select>
+          <div style="display:flex; gap:10px;">
+            <button id="save-btn">Speichern</button>
+            <button id="cancel-btn" type="button">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="views">
+        <div class="list-view">
+          <h3>Listenansicht</h3>
+
+          <!-- Filter -->
+          <div class="filter-container">
+            <label for="filter-date">Datum:</label>
+            <input type="date" id="filter-date" />
+            <label for="filter-status">Status:</label>
+            <select id="filter-status">
+              <option value="alle">Alle</option>
+              <option value="offen">Offen</option>
+              <option value="erledigt">Erledigt</option>
+            </select>
+            <button id="clear-filter">Alle anzeigen</button>
+          </div>
+
+          <ul id="todo-list"></ul>
+        </div>
+        <div class="calendar-view">
+          <h3>Kalenderansicht</h3>
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const showFormBtn = document.getElementById('show-form-btn');
+    const form = document.getElementById('input-form');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const input = document.getElementById('todo-input');
+    const dateInput = document.getElementById('todo-date');
+    const startInput = document.getElementById('todo-start');
+    const endInput = document.getElementById('todo-end');
+    const statusInput = document.getElementById('todo-status');
+    const todoList = document.getElementById('todo-list');
+    
+    const filterDateInput = document.getElementById('filter-date');
+    const filterStatusInput = document.getElementById('filter-status');
+    const clearFilterBtn = document.getElementById('clear-filter');
+    
+    let editIndex = null;
+    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+    let notificationTimers = [];
+
+    // Kalender init
+    let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+      initialView: 'dayGridMonth',
+      locale: 'de',
+      height: 500,
+      events: [],
+      dayCellClassNames: function(arg) {
+        const day = arg.date.getDay(); // 0 = Sonntag, 6 = Samstag
+        if (day === 0 || day === 6) {
+          return ['weekend-day'];
+        }
+        return [];
+      }
+    });
+    calendar.render();
+    
+    showFormBtn.addEventListener('click', () => {
+      form.style.display = 'flex';
+      showFormBtn.style.display = 'none';
+    });
+    
+    cancelBtn.addEventListener('click', resetForm);
+    saveBtn.addEventListener('click', handleSave);
+    
+    filterDateInput.addEventListener('change', renderTodos);
+    filterStatusInput.addEventListener('change', renderTodos);
+    clearFilterBtn.addEventListener('click', () => {
+      filterDateInput.value = '';
+      filterStatusInput.value = 'alle';
+      renderTodos();
+    });
+    
+    dateInput.addEventListener('keydown', e => {
+      if (e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        dateInput.value = getTodayISO();
+      }
+    });
+    
+    function handleSave() {
+      const text = input.value.trim();
+      const date = dateInput.value;
+      const start = startInput.value;
+      const end = endInput.value;
+      const status = statusInput.value;
+    
+      if (!text || !date) { alert("Titel und Datum sind Pflicht!"); return; }
+    
+      const todo = { text, date, start, end, status };
+    
+      if (editIndex !== null) {
+        todos[editIndex] = todo;
+        editIndex = null;
+      } else {
+        todos.push(todo);
+      }
+    
+      saveTodos();
+      renderTodos();
+      resetForm();
+    }
+    
+    function resetForm() {
+      form.style.display = 'none';
+      showFormBtn.style.display = 'inline-block';
+      input.value = '';
+      dateInput.value = '';
+      startInput.value = '';
+      endInput.value = '';
+      statusInput.value = 'offen';
+      editIndex = null;
+    }
+    
+    function renderTodos() {
+      todoList.innerHTML = '';
+      calendar.removeAllEvents();
+      clearNotifications();
+
+      const filterDate = filterDateInput.value;
+      const filterStatus = filterStatusInput.value;
+
+      todos.forEach((todo, index) => {
+        if ((filterDate && todo.date !== filterDate) || (filterStatus !== 'alle' && todo.status !== filterStatus)) return;
+
+        const li = document.createElement('li');
+        if (todo.status === 'offen' && new Date(todo.date) < new Date(getTodayISO())) li.classList.add('overdue');
+
+        li.innerHTML = `
+          <div class="todo-info">
+            <div class="todo-title">${todo.text}</div>
+            <div class="todo-date">${formatDate(todo.date)} ${todo.start || ''} ${todo.end || ''}</div>
+            <div class="status ${todo.status === 'offen' ? 'status-offen' : 'status-erledigt'}">${todo.status}</div>
+          </div>
+          <div class="actions">
+            <button onclick="editTodo(${index})">✏️</button>
+            <button onclick="deleteTodo(${index})">🗑️</button>
+          </div>
+        `;
+        todoList.appendChild(li);
+
+        // Kalender Event hinzufügen
+        calendar.addEvent({
+          title: todo.text,
+          start: todo.date + (todo.start ? 'T'+todo.start : ''),
+          end: todo.date + (todo.end ? 'T'+todo.end : ''),
+          color: todo.status === 'offen' ? '#5563DE' : '#c1ffd7'
+        });
+
+        scheduleNotification(todo);
+      });
+    }
+
+    function saveTodos() {
+      localStorage.setItem('todos', JSON.stringify(todos));
+    }
+    
+    function editTodo(index) {
+      const todo = todos[index];
+      input.value = todo.text;
+      dateInput.value = todo.date;
+      startInput.value = todo.start;
+      endInput.value = todo.end;
+      statusInput.value = todo.status;
+      form.style.display = 'flex';
+      showFormBtn.style.display = 'none';
+      editIndex = index;
+    }
+    
+    function deleteTodo(index) {
+      if(confirm("Wirklich löschen?")) {
+        todos.splice(index,1);
+        saveTodos();
+        renderTodos();
+      }
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('de-DE');
+    }
+
+    function getTodayISO() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    // Notifications
+    function scheduleNotification(todo) {
+      if (!todo.start || todo.status !== 'offen') return;
+      const notifTime = new Date(todo.date + 'T' + todo.start);
+      const now = new Date();
+      const delay = notifTime - now;
+      if (delay > 0) {
+        const timer = setTimeout(() => {
+          new Notification("Erinnerung: " + todo.text);
+        }, delay);
+        notificationTimers.push(timer);
+      }
+    }
+    function clearNotifications() {
+      notificationTimers.forEach(t => clearTimeout(t));
+      notificationTimers = [];
+    }
+
+    // Permission für Notifications
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    renderTodos();
+  </script>
+</body>
+</html>

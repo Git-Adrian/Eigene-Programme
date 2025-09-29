@@ -126,15 +126,25 @@
     }
 
     function updateDisplay() {
-      const formatted = rawInput.replace(/\d+([,]\d+)?/g, match => formatNumberString(match));
+      // Angepasste Erkennung von Zahlen inkl. führender Nullen, Komma und Dezimalteil
+      const formatted = rawInput.replace(/(\d*,?\d*)/g, match => formatNumberString(match));
       display.textContent = formatted || '0';
     }
 
     function formatNumberString(str) {
-      const [intPart, decPart] = str.split(',');
-      if (!intPart) return str;
-      const intFormatted = parseInt(intPart, 10).toLocaleString('de-DE');
-      return decPart ? `${intFormatted},${decPart}` : intFormatted;
+      if (str === '') return '';
+      // Falls Dezimalzahl mit führender Null, z.B. '0,02' oder ',02'
+      if (str.includes(',')) {
+        const [intPart, decPart] = str.split(',');
+        // intPart == "": Nutzer hat nur ',02' eingegeben, intPart == "0": '0,02'
+        // Dezimalteil bleibt erhalten
+        let sanitizedIntPart = intPart.length ? String(Number(intPart)) : '0';
+        // Nachkommastellen original übernehmen
+        return decPart !== undefined ? `${sanitizedIntPart},${decPart}` : sanitizedIntPart;
+      } else {
+        // Ganze Zahl, führende Nullen entfernen
+        return String(Number(str));
+      }
     }
 
     function formatNumber(number) {
@@ -277,7 +287,7 @@
         if (frac.includes('/') && /^[\d.,]+\/[\d.,]+$/.test(frac)) {
           const parts = frac.replace(/\./g, '').replace(/,/g, '.').split('/');
           const num = parseFloat(parts[0]);
-          const den = parseFloat(parts[1]);
+          const den = parseFloat(parts);
           if (den === 0) throw new Error();
           const result = num / den;
           display.textContent = formatNumber(result);
