@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earned-Value-Analyse – Kennzahlen</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+      color: #212529;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #343a40;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    thead {
+      background: #007bff;
+      color: white;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: #f1f3f5;
+    }
+
+    .abbr {
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .highlight {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding-left: 12px;
+    }
+
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      td {
+        border: none;
+        padding: 8px 10px;
+      }
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+        color: #495057;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Kennzahlen der Earned-Value-Analyse</h1>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Abkürzung</th>
+          <th>Beschreibung</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Budget at Completion<br><small>(Budget bei Projektende)</small></td>
+          <td class="abbr">BAC</td>
+          <td class="highlight">Geplantes bzw. geschätztes Gesamtbudget des Projekts. Diese Zahl ändert sich nur bei Anpassungen durch Change Requests. Einheit z. B. EUR oder Personentage.</td>
+        </tr>
+        <tr>
+          <td>Planned Value<br><small>(geplanter Wert)</small></td>
+          <td class="abbr">PV<sub>AP</sub>, PV<sub>Pt</sub></td>
+          <td class="highlight">Geplante Aufwände für Arbeitspakete bzw. das Projekt zu einem Zeitpunkt t. Entspricht den bis dahin geplanten Werten.</td>
+        </tr>
+        <tr>
+          <td>Actual Costs<br><small>(tatsächliche Kosten)</small></td>
+          <td class="abbr">AC<sub>APt</sub>, AC<sub>Pt</sub></td>
+          <td class="highlight">Tatsächlich entstandene Kosten in Arbeitspaketen oder im Projekt zu einem Zeitpunkt t.</td>
+        </tr>
+        <tr>
+          <td>Estimate to Complete<br><small>(geschätzte Kosten zum Abschluss)</small></td>
+          <td class="abbr">ETC<sub>APt</sub>, ETC<sub>Pt</sub></td>
+          <td class="highlight">Geschätzte noch anfallende Kosten zur Fertigstellung eines Arbeitspakets oder Projekts zum Zeitpunkt t.</td>
+        </tr>
+        <tr>
+          <td>Earned Value<br><small>(geschaffene Werte)</small></td>
+          <td class="abbr">EV<sub>APt</sub>, EV<sub>Pt</sub></td>
+          <td class="highlight">Tatsächlich geschaffene Werte zum Zeitpunkt t. Entspricht den tatsächlich abrechenbaren Leistungen im Projekt.</td>
+        </tr>
+        <tr>
+          <td>Estimate at Completion<br><small>(geschätzte Aufwände bei Abschluss)</small></td>
+          <td class="abbr">EAC<sub>APt</sub>, EAC<sub>Pt</sub></td>
+          <td class="highlight">Schätzung der Gesamtkosten eines Arbeitspakets oder Projekts nach dessen Abschluss.</td>
+        </tr>
+        <tr>
+          <td>Schedule Variance<br><small>(Planabweichung)</small></td>
+          <td class="abbr">SV<sub>Pt</sub></td>
+          <td class="highlight">Abweichung zwischen geplanten und tatsächlich geschaffenen Werten zum Zeitpunkt t (SV = EV - PV).</td>
+        </tr>
+        <tr>
+          <td>Cost Variance<br><small>(Kostenabweichung)</small></td>
+          <td class="abbr">CV<sub>Pt</sub></td>
+          <td class="highlight">Abweichung zwischen geschaffenen Werten und tatsächlichen Kosten zum Zeitpunkt t (CV = EV - AC).</td>
+        </tr>
+        <tr>
+          <td>Schedule Performance Index<br><small>(Zeiteffizienzindikator)</small></td>
+          <td class="abbr">SPI<sub>Pt</sub></td>
+          <td class="highlight">Verhältnis zwischen geschaffenen Werten und geplanten Werten (SPI = EV / PV). Misst Zeit-Effizienz.</td>
+        </tr>
+        <tr>
+          <td>Cost Performance Index<br><small>(Kosteneffizienzindikator)</small></td>
+          <td class="abbr">CPI<sub>Pt</sub></td>
+          <td class="highlight">Verhältnis zwischen geschaffenen Werten und tatsächlichen Kosten (CPI = EV / AC). Misst Kosten-Effizienz.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

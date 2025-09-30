@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earned-Value-Analyse Stichtagsrechner</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    margin: 0;
+    padding: 20px;
+    color: #2c3e50;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #d1d8e0;
+    font-size: 1rem;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #2980b9;
+    box-shadow: 0 0 8px rgba(41,128,185,0.2);
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .infobox {
+    background-color: #ecf0f1;
+    padding: 15px 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  .infobox strong {
+    color: #2980b9;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+  }
+
+  th, td {
+    border: 1px solid #d1d8e0;
+    padding: 10px;
+    text-align: center;
+  }
+
+  th {
+    background-color: #2980b9;
+    color: white;
+    font-weight: 600;
+  }
+
+  td {
+    background-color: #f7f9fc;
+  }
+
+  canvas {
+    margin-top: 25px;
+    border-radius: 16px;
+  }
+
+</style>
+</head>
+<body>
+<h1>Earned-Value-Analyse Stichtagsrechner</h1>
+<div class="container">
+
+  <!-- Infobox -->
+  <div class="infobox">
+    <strong>Erklärung der Kennzahlen:</strong><br>
+    <ul>
+      <li><strong>BAC (Budget at Completion):</strong> Gesamtes geplantes Projektbudget.</li>
+      <li><strong>AC (Actual Cost):</strong> Tatsächlich entstandene Kosten bis zum Stichtag.</li>
+      <li><strong>PV (Planned Value):</strong> Geplanter Wert der erbrachten Leistungen bis zum Stichtag.</li>
+      <li><strong>ETC (Estimate to Complete):</strong> Geschätzte Kosten für die Fertigstellung der noch offenen Arbeitspakete.</li>
+      <li><strong>EV (Earned Value):</strong> Tatsächlich geschaffener Wert der erbrachten Leistungen.</li>
+      <li><strong>EAC (Estimate at Completion):</strong> Voraussichtliche Gesamtkosten des Projekts.</li>
+      <li><strong>CV (Cost Variance):</strong> Abweichung zwischen EV und AC. Positiv = unter Budget, negativ = über Budget.</li>
+      <li><strong>SPI (Schedule Performance Index):</strong> Verhältnis EV zu PV. >1 = vor Plan, <1 = hinter Plan.</li>
+      <li><strong>CPI (Cost Performance Index):</strong> Verhältnis EV zu AC. >1 = effizient, <1 = ineffizient.</li>
+    </ul>
+  </div>
+
+  <!-- Eingabe -->
+  <div class="grid">
+    <div>
+      <label for="stichtag">Stichtag (t)</label>
+      <input type="number" id="stichtag" placeholder="z. B. 1">
+    </div>
+    <div>
+      <label for="bac">BAC</label>
+      <input type="number" id="bac" placeholder="z. B. 250">
+    </div>
+    <div>
+      <label for="pv">Planned Value (PV)</label>
+      <input type="number" id="pv" placeholder="z. B. 75">
+    </div>
+    <div>
+      <label for="ac">Actual Cost (AC)</label>
+      <input type="number" id="ac" placeholder="z. B. 70">
+    </div>
+    <div>
+      <label for="etc">Estimate to Complete (ETC)</label>
+      <input type="number" id="etc" placeholder="z. B. 183">
+    </div>
+  </div>
+
+  <button onclick="addStichtag()">Stichtag hinzufügen</button>
+
+  <table id="evaTable">
+    <thead>
+      <tr>
+        <th>t</th>
+        <th>BAC</th>
+        <th>AC</th>
+        <th>PV</th>
+        <th>ETC</th>
+        <th>EV</th>
+        <th>EAC</th>
+        <th>CV</th>
+        <th>SPI</th>
+        <th>CPI</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <canvas id="chartEV"></canvas>
+  <canvas id="chartSPI_CPI"></canvas>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let stichtage = [];
+let chartEV, chartSPI_CPI;
+
+function addStichtag() {
+  const t = parseFloat(document.getElementById('stichtag').value);
+  const bac = parseFloat(document.getElementById('bac').value);
+  const pv = parseFloat(document.getElementById('pv').value);
+  const ac = parseFloat(document.getElementById('ac').value);
+  const etc = parseFloat(document.getElementById('etc').value);
+
+  if ([t, bac, pv, ac, etc].some(isNaN)) {
+    alert("Bitte alle Felder korrekt ausfüllen!");
+    return;
+  }
+
+  const ev = pv - etc;
+  const eac = ac + etc;
+  const cv = ev - ac;
+  const spi = pv !== 0 ? ev / pv : 0;
+  const cpi = ac !== 0 ? ev / ac : 0;
+
+  stichtage.push({t, bac, ac, pv, etc, ev, eac, cv, spi, cpi});
+  renderTable();
+  renderCharts();
+}
+
+function renderTable() {
+  const tbody = document.querySelector("#evaTable tbody");
+  tbody.innerHTML = "";
+  stichtage.forEach(s => {
+    const row = `<tr>
+      <td>${s.t}</td>
+      <td>${s.bac}</td>
+      <td>${s.ac}</td>
+      <td>${s.pv}</td>
+      <td>${s.etc}</td>
+      <td>${s.ev}</td>
+      <td>${s.eac}</td>
+      <td>${s.cv}</td>
+      <td>${s.spi.toFixed(2)}</td>
+      <td>${s.cpi.toFixed(2)}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+}
+
+function renderCharts() {
+  const labels = stichtage.map(s => `t=${s.t}`);
+  const evData = stichtage.map(s => s.ev);
+  const pvData = stichtage.map(s => s.pv);
+  const acData = stichtage.map(s => s.ac);
+  const eacData = stichtage.map(s => s.eac);
+  const spiData = stichtage.map(s => s.spi);
+  const cpiData = stichtage.map(s => s.cpi);
+
+  if(chartEV) chartEV.destroy();
+  chartEV = new Chart(document.getElementById("chartEV"), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'EV', data: evData, borderColor: '#27ae60', fill:false, tension:0.3 },
+        { label: 'PV', data: pvData, borderColor: '#2980b9', fill:false, tension:0.3 },
+        { label: 'AC', data: acData, borderColor: '#c0392b', fill:false, tension:0.3 },
+        { label: 'EAC', data: eacData, borderColor: '#f39c12', fill:false, tension:0.3 }
+      ]
+    },
+    options: { responsive:true, plugins:{title:{display:true,text:'EV/PV/AC/EAC Verlauf'}} }
+  });
+
+  if(chartSPI_CPI) chartSPI_CPI.destroy();
+  chartSPI_CPI = new Chart(document.getElementById("chartSPI_CPI"), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'SPI', data: spiData, borderColor: '#8e44ad', fill:false, tension:0.3 },
+        { label: 'CPI', data: cpiData, borderColor: '#16a085', fill:false, tension:0.3 }
+      ]
+    },
+    options: { responsive:true, plugins:{title:{display:true,text:'SPI & CPI Verlauf'}}, scales:{y:{beginAtZero:true}} }
+  });
+}
+</script>
+</body>
+</html>

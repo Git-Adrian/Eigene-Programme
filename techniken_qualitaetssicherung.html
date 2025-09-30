@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Info-Webanwendung – Testtechniken</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      background:#f4f6f9;
+      color:#222;
+      line-height:1.5;
+    }
+    header{
+      background:#3b82f6;
+      color:white;
+      padding:20px;
+      text-align:center;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    }
+    header h1{
+      margin:0;
+      font-size:1.8rem;
+    }
+    header p{
+      margin:6px 0 0;
+      font-size:1rem;
+      opacity:0.9;
+    }
+    main{
+      max-width:1100px;
+      margin:30px auto;
+      background:white;
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:0.95rem;
+    }
+    thead{
+      background:#e0e7ff;
+    }
+    th,td{
+      padding:12px 14px;
+      text-align:left;
+      vertical-align:top;
+      border-bottom:1px solid #e5e7eb;
+    }
+    th{
+      font-weight:600;
+      color:#1e3a8a;
+    }
+    tbody tr:nth-child(even){
+      background:#f9fafb;
+    }
+    tbody tr:hover{
+      background:#f1f5f9;
+    }
+    @media (max-width:800px){
+      table, thead, tbody, th, td, tr{display:block;width:100%}
+      thead{display:none}
+      tr{margin-bottom:15px;background:#f9fafb;border-radius:8px;padding:10px}
+      td{border:none;padding:8px 10px}
+      td::before{content:attr(data-label);font-weight:600;display:block;margin-bottom:4px;color:#1e3a8a}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Übersicht: Testtechniken</h1> 
+  </header>
+  <main>
+    <table>
+      <thead>
+        <tr>
+          <th>Name der Technik</th>
+          <th>Beschreibung</th>
+          <th>Einsatz</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Name">Anwendungsfallbasierte Testfallerstellung</td>
+          <td data-label="Beschreibung">Ableitung von Testdaten aus dokumentierten Anwendungsfällen (Use Cases), zu denen häufig fachliche Vorbedingungen, das zu erreichende Ziel und Nachbedingungen dokumentiert sind.</td>
+          <td data-label="Einsatz">Test, ob die festgelegten fachlichen Ziele innerhalb des Use Cases erreicht werden können; in der Regel nur als Black-Box-Test anwendbar.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Äquivalenzklassenbildung</td>
+          <td data-label="Beschreibung">Zusammenfassen von möglichen Eingabewerten, mit denen das gleiche fachliche Ergebnis in Äquivalenzklassen erzielt wird. Jede Äquivalenzklasse wird durch einen Vertreter getestet.</td>
+          <td data-label="Einsatz">Ermittlung von Eingabedaten für Fachfunktionen, gezieltes Testen des Systemverhaltens mit gültigen und ungültigen Werten.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Grenzwertanalyse</td>
+          <td data-label="Beschreibung">Erstellen von Testdaten gezielt an den Grenzen von gültigen und ungültigen Wertebereichen, oft in Kombination mit Äquivalenzklassenbildung.</td>
+          <td data-label="Einsatz">Testen des Systemverhaltens gezielt an gültigen und ungültigen Werten bzw. an Grenzen von Äquivalenzklassen, die jeweils ein anderes fachliches bzw. technisches Verhalten erfordern.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Zustandsbasierte Testfallerstellung</td>
+          <td data-label="Beschreibung">Erstellen von fachlichen Testdaten auf Grundlage des Lebenszyklus oder fachlichen Zuständen von Geschäftsobjekten (Black-Box-Test); Erstellen von technischen Testdaten zur Überprüfung von technischen Zuständen (White-Box-Test) des Systems, einer Komponente oder einer Klasse sowie deren Zustandsübergänge.</td>
+          <td data-label="Einsatz">Fachlicher oder technischer Zustandstest, mit dem auch explizit die Nicht-Durchführung von verbotenen Zustandsübergängen getestet werden kann; insbesondere relevant, wenn bei der Spezifikation von Systemverhalten Zustandsdiagramme oder Zustandstabellen eingesetzt werden.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Erstellung von Zufallstestdaten</td>
+          <td data-label="Beschreibung">Automatische, nicht-deterministische Erstellung von Testdaten; Daten werden in der Regel nicht völlig zufällig erzeugt; häufig wird von den Eingabedaten gefordert, dass deren Struktur bestimmte Anforderungen erfüllt.</td>
+          <td data-label="Einsatz">Ergänzung von strukturierten Methoden zur Testdatenerzeugung; eignet sich beispielsweise in Kombination mit der Äquivalenzklassenbildung.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Ursache-Wirkungs-Analyse</td>
+          <td data-label="Beschreibung">Prüfung von Beziehungen und Wechselwirkungen von Äquivalenzklassen; Ergebnis dieser Prüfung sind Kombinationen verschiedener Äquivalenzklassen, die jeweils in ein ganz bestimmtes Systemverhalten resultieren.</td>
+          <td data-label="Einsatz">Prüfung von Anwendungsverhalten (Wirkung), das die Kombination verschiedener Eingabewerte (Ursachen) bestimmt.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Anweisungsüberdeckung</td>
+          <td data-label="Beschreibung">Erstellung von Testdaten, mit denen jede Anweisung im Code (White-Box-Test) mindestens 1 x ausgeführt wird; Erstellung von Testdaten, mit denen jede Fachfunktion (Black-Box-Test) des unterstützten Geschäftsprozesses mindestens 1 x ausgeführt wird.</td>
+          <td data-label="Einsatz">Sicherstellen, dass jede relevante Anweisung/Funktion beim Test 1 x aufgerufen wird.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Zweigüberdeckung</td>
+          <td data-label="Beschreibung">Erstellung von Testdaten, mit denen jeder Zweig im Kontrollfluss mindestens 1 x durchlaufen wird; d. h., Entscheidungen im Kontrollfluss müssen so getroffen werden, dass jeder ausgehende Zweig mind. 1 x durchlaufen wird.</td>
+          <td data-label="Einsatz">Sicherstellen, dass jeder mögliche Zweig im Quellcode (White-Box-Test) bzw. dass jeder mögliche Zweig im Geschäftsprozess (Black-Box-Test) erreicht und durchlaufen werden kann.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Bedingungsüberdeckung</td>
+          <td data-label="Beschreibung">Erstellung von Testdaten, die jede einzelne logische Entscheidung im Programmcode (White-Box-Test) oder an Entscheidungsknoten im Geschäftsprozess (Black-Box-Test) jeweils mind. 1 x zu WAHR und mind. 1 x zu FALSCH auswerten lassen.</td>
+          <td data-label="Einsatz">Prüfen von zusammengesetzten Entscheidungen und dem aus ihrem Verhalten resultierenden Systemverhalten.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Pfadtest</td>
+          <td data-label="Beschreibung">Erstellung von Testdaten, sodass der gesamte Kontrollflusspfad innerhalb einer Komponente im Programmcode (White-Box-Test) oder ein Pfad durch den Geschäftsprozess (Black-Box-Test) von Anfang bis Ende durchlaufen werden kann. Dabei muss sichergestellt sein, dass dabei auch der mehrfache Durchlauf von Schleifen getestet wird.</td>
+          <td data-label="Einsatz">Fachlicher Ende-Zu-Ende-Test durch den gesamten fachlichen Prozess (Black-Box-Test) bzw. durch eine Methode oder Systemkomponente (White-Box-Test), Prüfen des Systemverhaltens gezielt beim Schleifendurchlauf.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Entscheidungstabelle</td>
+          <td data-label="Beschreibung">Erstellung von fachlichen Testdaten, mit denen die Auswertung aller relevanter Bedingungen im Programmcode (White-Box-Test) bzw. in spezifizierten Geschäftsregeln (Black-Box-Test) geprüft werden kann.</td>
+          <td data-label="Einsatz">Prüfen des Systemverhaltens bei der Auswertung und Umsetzung von Geschäftsregeln sowie von komplexen Kontrollflussentscheidungen; insbesondere relevant, wenn bei der Spezifikation Entscheidungstabellen eingesetzt wurden.</td>
+        </tr>
+        <tr>
+          <td data-label="Name">Exploratives Testen</td>
+          <td data-label="Beschreibung">Manuelle, nach Gefühl und Erfahrung erzeugte Testdaten, von denen der Tester glaubt, mögliche Fehler identifizieren zu können. Können bei einem großen Erfahrungsschatz im Testen der relevanten Systemklasse sehr effizient sein.</td>
+          <td data-label="Einsatz">Wird häufig von Kunden oder Fachanwendern ohne Kenntnisse von Methoden zur Testdatenerzeugung durchgeführt. Einsatz bei großem Erfahrungsschatz mit dem System, bei dem es bei bestimmten Funktionen oder Eingabedaten immer zu Problemen kommt.</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
