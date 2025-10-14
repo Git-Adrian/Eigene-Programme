@@ -3,170 +3,190 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Moderne ToDo App mit Kalender & Hover-Details</title>
+<title>✨ To-Do App mit Kalender & Erinnerungen</title>
 
 <!-- FullCalendar -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
 <style>
+  /* ---------- GLOBAL STYLES ---------- */
+  :root {
+    --primary: #5563DE;
+    --primary-dark: #3d4cc3;
+    --accent: #6dd5ed;
+    --urgent: #ff4d4d;
+    --bg: #f4f6fb;
+    --glass: rgba(255,255,255,0.8);
+    --radius: 16px;
+    --transition: 0.25s ease;
+  }
+
   body {
     margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background: linear-gradient(-45deg, #74ABE2, #5563DE, #6dd5ed, #2193b0);
+    font-family: "Inter", "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #74ABE2, #5563DE, #6dd5ed, #2193b0);
     background-size: 400% 400%;
-    animation: gradientBG 12s ease infinite;
+    animation: gradientShift 15s ease infinite;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 20px;
     min-height: 100vh;
+    padding: 2rem;
   }
-  @keyframes gradientBG {
+
+  @keyframes gradientShift {
     0% {background-position: 0% 50%;}
     50% {background-position: 100% 50%;}
     100% {background-position: 0% 50%;}
   }
 
   .container {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     width: 100%;
-    max-width: 1150px;
+    max-width: 1200px;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.2);
     overflow: hidden;
-    padding-bottom: 1rem;
   }
 
   .header {
-    background: #5563DE;
+    background: var(--primary);
     color: white;
-    padding: 20px;
     text-align: center;
-  }
-  .header img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-    border: 3px solid white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    padding: 2rem 1rem;
   }
 
-  h1 { margin: 0; font-size: 1.6rem; }
+  .header img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid white;
+    object-fit: cover;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  }
+
+  h1 { margin: 0; font-size: 1.8rem; }
 
   .content {
-    padding: 20px;
+    padding: 2rem;
     display: flex;
-    gap: 20px;
     flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background var(--transition), transform 0.15s;
+  }
+
+  button:hover { background: var(--primary-dark); }
+  button:active { transform: scale(0.96); }
+
+  #show-form-btn {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
   }
 
   .input-form {
     display: none;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 0.75rem;
+    background: rgba(255,255,255,0.95);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 1rem;
   }
 
-  input, select {
-    padding: 10px;
-    border: 2px solid #ccc;
+  .input-form input, .input-form select {
+    padding: 10px 12px;
+    border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
-    transition: all 0.3s;
+    transition: var(--transition);
   }
-
-  input:focus, select:focus {
-    border-color: #5563DE;
-    outline: none;
-  }
-
-  button {
-    background: #5563DE;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.1s ease;
-  }
-
-  button:hover { background: #4450b0; }
-  button:active { transform: scale(0.95); }
 
   .views {
     display: flex;
-    gap: 20px;
+    gap: 2rem;
     flex: 1;
     flex-wrap: wrap;
   }
 
   .list-view, .calendar-view {
     flex: 1;
-    min-width: 300px;
-    background: #fafafa;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    min-width: 320px;
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   }
 
-  ul { list-style: none; padding: 0; margin-top: 20px; }
+  h3 { margin-top: 0; }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+  }
+
   li {
-    background: #fff;
-    border-radius: 8px;
-    padding: 12px;
+    background: #f9fafc;
+    border-radius: 10px;
+    padding: 12px 16px;
     margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border: 1px solid #eee;
-    flex-wrap: wrap;
-    transition: all 0.3s ease;
+    transition: all var(--transition);
   }
 
-  .todo-info { flex: 1; min-width: 200px; }
-  .todo-title { font-weight: bold; }
-  .todo-date { font-size: 0.85rem; color: #666; }
+  li:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 
-  .status {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    margin-top: 4px;
-  }
-  .status-offen { background: #ffefc1; color: #a67c00; }
-  .status-erledigt { background: #c1ffd7; color: #006633; }
-  .status-urgent { background: #ffcccc; color: #cc0000; }
+  .status-offen { background: #fff3c4; color: #a67c00; }
+  .status-erledigt { background: #caffd4; color: #006633; }
+  .status-urgent { background: #ffbaba; color: #a80000; }
 
-  .actions button { margin-left: 5px; padding: 6px 8px; font-size: 0.9rem; }
+  #calendar { margin-top: 1rem; }
+  .weekend-day { background-color: #fafafa !important; }
 
-  .overdue { border-color: #ff4d4d !important; background: #ffe5e5 !important; }
-
-  .filter-container {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-
-  .weekend-day { background-color: #f0f0f0 !important; }
-
-  /* Tooltip für Kalender-Hover */
-  .calendar-tooltip {
+  /* ---------- MODERN TOOLTIP ---------- */
+  .fc-tooltip {
     position: absolute;
-    background: rgba(0,0,0,0.85);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 8px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     font-size: 0.9rem;
-    max-width: 260px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    color: #333;
     pointer-events: none;
-    display: none;
-    transition: opacity 0.2s ease;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: all 0.15s ease;
+    z-index: 9999;
+  }
+
+  .fc-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media(max-width: 800px) {
+    .views { flex-direction: column; }
   }
 </style>
 </head>
@@ -174,16 +194,17 @@
 <div class="container">
   <div class="header">
     <img src="https://image.pngaaa.com/561/898561-middle.png" alt="Logo" />
-    <h1>Meine To-Do's</h1>
+    <h1>🗓️ Meine To-Do App</h1>
   </div>
+
   <div class="content">
     <div style="flex:1 1 100%;">
-      <button id="show-form-btn">➕ Hinzufügen</button>
+      <button id="show-form-btn">➕ Neue Aufgabe</button>
       <div class="input-form" id="input-form">
         <input type="text" id="todo-input" placeholder="Titel eingeben..." />
         <input type="date" id="todo-date" />
         <div style="display:flex; gap:10px;">
-          <input type="time" id="todo-start" /> 
+          <input type="time" id="todo-start" />
           <input type="time" id="todo-end" />
         </div>
         <select id="todo-status">
@@ -192,45 +213,33 @@
         </select>
         <label><input type="checkbox" id="todo-urgent" /> Dringlich</label>
         <div style="display:flex; gap:10px;">
-          <button id="save-btn">Speichern</button>
-          <button id="cancel-btn" type="button">Abbrechen</button>
-          <button id="delete-btn" type="button" style="display:none; background:#ff4d4d;">Löschen</button>
+          <button id="save-btn">💾 Speichern</button>
+          <button id="cancel-btn" type="button">✖️ Abbrechen</button>
+          <button id="delete-btn" type="button" style="display:none; background:var(--urgent);">🗑️ Löschen</button>
         </div>
       </div>
     </div>
 
     <div class="views">
       <div class="list-view">
-        <h3>Listenansicht</h3>
-        <div class="filter-container">
-          <label for="filter-date">Datum:</label>
-          <input type="date" id="filter-date" />
-          <label for="filter-status">Status:</label>
-          <select id="filter-status">
-            <option value="alle">Alle</option>
-            <option value="offen">Offen</option>
-            <option value="erledigt">Erledigt</option>
-          </select>
-          <button id="clear-filter">Alle anzeigen</button>
-        </div>
+        <h3>📋 Listenansicht</h3>
         <ul id="todo-list"></ul>
       </div>
+
       <div class="calendar-view">
-        <h3>Kalenderansicht</h3>
+        <h3>📆 Kalenderansicht</h3>
         <div id="calendar"></div>
       </div>
     </div>
   </div>
 </div>
 
-<div id="calendar-tooltip" class="calendar-tooltip"></div>
-
 <script>
 const showFormBtn = document.getElementById('show-form-btn');
 const form = document.getElementById('input-form');
 const saveBtn = document.getElementById('save-btn');
 const cancelBtn = document.getElementById('cancel-btn');
-const deleteFormBtn = document.getElementById('delete-btn');
+const deleteBtn = document.getElementById('delete-btn');
 const input = document.getElementById('todo-input');
 const dateInput = document.getElementById('todo-date');
 const startInput = document.getElementById('todo-start');
@@ -238,172 +247,125 @@ const endInput = document.getElementById('todo-end');
 const statusInput = document.getElementById('todo-status');
 const urgentInput = document.getElementById('todo-urgent');
 const todoList = document.getElementById('todo-list');
-const tooltip = document.getElementById('calendar-tooltip');
 
-const filterDateInput = document.getElementById('filter-date');
-const filterStatusInput = document.getElementById('filter-status');
-const clearFilterBtn = document.getElementById('clear-filter');
-
+let todos = JSON.parse(localStorage.getItem('todos')) || [];
 let editId = null;
-let todos = (JSON.parse(localStorage.getItem('todos')) || []).map(t => ({ ...t, id: String(t.id) }));
+
+const tooltip = document.createElement('div');
+tooltip.classList.add('fc-tooltip');
+document.body.appendChild(tooltip);
 
 // Kalender
 let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
   initialView: 'dayGridMonth',
   locale: 'de',
-  height: 520,
+  height: 500,
   events: [],
-  dayCellDidMount: function(arg) {
-    arg.el.addEventListener("mouseenter", e => showDayTooltip(arg.date, e));
-    arg.el.addEventListener("mousemove", e => moveTooltip(e));
-    arg.el.addEventListener("mouseleave", hideTooltip);
-  },
-  dayCellClassNames: function(arg) {
-    const day = arg.date.getDay();
-    if (day === 0 || day === 6) return ['weekend-day'];
-    return [];
+  dayCellClassNames: arg => (arg.date.getDay() === 0 || arg.date.getDay() === 6) ? ['weekend-day'] : [],
+  eventDidMount: function(info) {
+    info.el.addEventListener('mouseenter', e => {
+      const { title, start, end, extendedProps } = info.event;
+      const startTime = start ? start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      const endTime = end ? end.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      tooltip.innerHTML = `
+        <strong>${title}</strong><br>
+        📅 ${start.toLocaleDateString('de-DE')}<br>
+        🕓 ${startTime} ${endTime ? '– ' + endTime : ''}<br>
+        ${extendedProps.urgent ? '<span style="color:#ff4d4d;">⚠️ Dringlich</span>' : ''}
+      `;
+      tooltip.classList.add('visible');
+      tooltip.style.top = (e.pageY + 10) + 'px';
+      tooltip.style.left = (e.pageX + 10) + 'px';
+    });
+
+    info.el.addEventListener('mousemove', e => {
+      tooltip.style.top = (e.pageY + 10) + 'px';
+      tooltip.style.left = (e.pageX + 10) + 'px';
+    });
+
+    info.el.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('visible');
+    });
   }
 });
 calendar.render();
 
-function showDayTooltip(date, e) {
-  const dateStr = date.toISOString().split("T")[0];
-  const dayTodos = todos.filter(t => t.date === dateStr);
-  if (dayTodos.length === 0) return;
+// CRUD-Funktionen
+showFormBtn.onclick = () => { form.style.display='flex'; showFormBtn.style.display='none'; };
+cancelBtn.onclick = resetForm;
+saveBtn.onclick = saveTodo;
+deleteBtn.onclick = deleteTodo;
 
-  tooltip.innerHTML = dayTodos.map(t => `
-    <div><b>${t.text}</b> ${t.start ? `(${t.start})` : ''} 
-      <div style="font-size:0.8rem; color:#ccc;">${t.status}${t.urgent ? ' ⚠️' : ''}</div>
-    </div>`).join("<hr style='border:none;border-top:1px solid #666;margin:6px 0;'>");
-
-  tooltip.style.display = "block";
-  moveTooltip(e);
-}
-
-function moveTooltip(e) {
-  tooltip.style.top = (e.pageY + 12) + "px";
-  tooltip.style.left = (e.pageX + 12) + "px";
-}
-
-function hideTooltip() {
-  tooltip.style.display = "none";
-}
-
-// Formularsteuerung
-showFormBtn.addEventListener('click', () => { form.style.display = 'flex'; showFormBtn.style.display = 'none'; });
-cancelBtn.addEventListener('click', resetForm);
-saveBtn.addEventListener('click', handleSave);
-filterDateInput.addEventListener('change', renderTodos);
-filterStatusInput.addEventListener('change', renderTodos);
-clearFilterBtn.addEventListener('click', () => {
-  filterDateInput.value = '';
-  filterStatusInput.value = 'alle';
-  renderTodos();
-});
-
-deleteFormBtn.addEventListener('click', () => {
-  if (!editId) return;
-  if (confirm("Wirklich löschen?")) {
-    todos = todos.filter(t => String(t.id) !== String(editId));
-    saveTodos();
-    renderTodos();
-    resetForm();
-  }
-});
-
-function handleSave() {
+function saveTodo() {
   const text = input.value.trim();
   const date = dateInput.value;
+  if (!text || !date) return alert("Titel und Datum sind Pflicht!");
+
   const start = startInput.value;
   const end = endInput.value;
   const status = statusInput.value;
   const urgent = urgentInput.checked;
 
-  if (!text || !date) { alert("Titel und Datum sind Pflicht!"); return; }
-
-  if (editId !== null) {
-    todos = todos.map(t => String(t.id) === String(editId) ? { ...t, text, date, start, end, status, urgent } : t);
-    editId = null;
+  if (editId) {
+    todos = todos.map(t => t.id === editId ? { id: editId, text, date, start, end, status, urgent } : t);
   } else {
-    todos.push({ id: String(Date.now() + Math.random()), text, date, start, end, status, urgent });
+    todos.push({ id: Date.now().toString(), text, date, start, end, status, urgent });
   }
+  saveAndRender();
+}
 
-  saveTodos();
+function deleteTodo() {
+  if (!editId) return;
+  todos = todos.filter(t => t.id !== editId);
+  saveAndRender();
+}
+
+function resetForm() {
+  form.style.display='none';
+  showFormBtn.style.display='inline-block';
+  input.value=''; dateInput.value=''; startInput.value=''; endInput.value='';
+  urgentInput.checked=false; statusInput.value='offen'; editId=null;
+  deleteBtn.style.display='none';
+}
+
+function saveAndRender() {
+  localStorage.setItem('todos', JSON.stringify(todos));
   renderTodos();
   resetForm();
 }
 
-function resetForm() {
-  form.style.display = 'none';
-  showFormBtn.style.display = 'inline-block';
-  input.value = '';
-  dateInput.value = '';
-  startInput.value = '';
-  endInput.value = '';
-  statusInput.value = 'offen';
-  urgentInput.checked = false;
-  editId = null;
-  deleteFormBtn.style.display = 'none';
-}
-
-function saveTodos() { localStorage.setItem('todos', JSON.stringify(todos)); }
-
 function renderTodos() {
-  todoList.innerHTML = '';
-  calendar.removeAllEvents();
-  const filterDate = filterDateInput.value;
-  const filterStatus = filterStatusInput.value;
-
-  todos.forEach(todo => {
-    if ((filterDate && todo.date !== filterDate) || (filterStatus !== 'alle' && todo.status !== filterStatus)) return;
-
-    const li = document.createElement('li');
-    if (todo.status === 'offen' && new Date(todo.date) < new Date()) li.classList.add('overdue');
-
-    const infoDiv = document.createElement('div');
-    infoDiv.classList.add('todo-info');
-    infoDiv.innerHTML = `<div class="todo-title">${todo.text}</div>
-      <div class="todo-date">${todo.date} ${todo.start||''} ${todo.end||''}</div>
-      <div class="status ${todo.urgent?'status-urgent':todo.status==='offen'?'status-offen':'status-erledigt'}">
-        ${todo.urgent?'Dringlich':todo.status}
-      </div>`;
-
-    const actionsDiv = document.createElement('div');
-    actionsDiv.classList.add('actions');
-
-    const editBtn = document.createElement('button');
-    editBtn.textContent = '✏️';
-    editBtn.addEventListener('click', () => startEdit(todo.id));
-    actionsDiv.appendChild(editBtn);
-
-    li.appendChild(infoDiv);
-    li.appendChild(actionsDiv);
+  todoList.innerHTML=''; calendar.removeAllEvents();
+  todos.forEach(t => {
+    const li=document.createElement('li');
+    li.innerHTML = `
+      <div>
+        <div><strong>${t.text}</strong></div>
+        <small>${t.date} ${t.start||''} ${t.end||''}</small><br>
+        <span class="${t.urgent?'status-urgent':t.status==='offen'?'status-offen':'status-erledigt'}">${t.urgent?'Dringlich':t.status}</span>
+      </div>
+      <button>✏️</button>`;
+    li.querySelector('button').onclick=()=>startEdit(t.id);
     todoList.appendChild(li);
 
-    let start = todo.date + (todo.start ? 'T'+todo.start : '');
-    let end = todo.date + (todo.end ? 'T'+todo.end : '');
     calendar.addEvent({
-      id: todo.id,
-      title: todo.text,
-      start,
-      end,
-      color: todo.urgent ? '#ff4d4d' : (todo.status==='offen'?'#5563DE':'#55c57a')
+      id: t.id,
+      title: t.text,
+      start: t.date + (t.start ? 'T' + t.start : ''),
+      end: t.date + (t.end ? 'T' + t.end : ''),
+      color: t.urgent ? '#ff4d4d' : (t.status==='offen'?'#5563DE':'#c1ffd7'),
+      extendedProps: { urgent: t.urgent }
     });
   });
 }
 
 function startEdit(id) {
-  const todo = todos.find(t => String(t.id)===String(id));
-  input.value = todo.text;
-  dateInput.value = todo.date;
-  startInput.value = todo.start||'';
-  endInput.value = todo.end||'';
-  statusInput.value = todo.status;
-  urgentInput.checked = todo.urgent||false;
-  form.style.display='flex';
-  showFormBtn.style.display='none';
-  editId = String(id);
-  deleteFormBtn.style.display = 'inline-block';
+  const t=todos.find(x=>x.id===id);
+  if (!t) return;
+  form.style.display='flex'; showFormBtn.style.display='none';
+  input.value=t.text; dateInput.value=t.date; startInput.value=t.start; endInput.value=t.end;
+  statusInput.value=t.status; urgentInput.checked=t.urgent;
+  editId=t.id; deleteBtn.style.display='inline-block';
 }
 
 renderTodos();
