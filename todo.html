@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Moderne ToDo App mit Erinnerungen</title>
+<title>Moderne ToDo App mit Kalender & Hover-Details</title>
 
 <!-- FullCalendar -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
@@ -32,10 +32,10 @@
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    padding: 0;
     width: 100%;
-    max-width: 1100px;
+    max-width: 1150px;
     overflow: hidden;
+    padding-bottom: 1rem;
   }
 
   .header {
@@ -48,11 +48,11 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    object-fit: cover;
     margin-bottom: 10px;
     border: 3px solid white;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   }
+
   h1 { margin: 0; font-size: 1.6rem; }
 
   .content {
@@ -62,20 +62,22 @@
     flex-wrap: wrap;
   }
 
-  /* Input-Formular */
   .input-form {
     display: none;
     flex-direction: column;
     gap: 10px;
     margin-bottom: 20px;
   }
-  .input-form input, .input-form select {
+
+  input, select {
     padding: 10px;
     border: 2px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
+    transition: all 0.3s;
   }
-  .input-form input:focus, .input-form select:focus {
+
+  input:focus, select:focus {
     border-color: #5563DE;
     outline: none;
   }
@@ -89,6 +91,7 @@
     cursor: pointer;
     transition: background 0.3s ease, transform 0.1s ease;
   }
+
   button:hover { background: #4450b0; }
   button:active { transform: scale(0.95); }
 
@@ -98,18 +101,19 @@
     flex: 1;
     flex-wrap: wrap;
   }
+
   .list-view, .calendar-view {
     flex: 1;
     min-width: 300px;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
   }
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-  }
+  ul { list-style: none; padding: 0; margin-top: 20px; }
   li {
-    background: #f8f8f8;
+    background: #fff;
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 12px;
@@ -147,65 +151,79 @@
     margin-top: 10px;
     flex-wrap: wrap;
   }
-  .filter-container label { font-weight: bold; }
 
   .weekend-day { background-color: #f0f0f0 !important; }
+
+  /* Tooltip für Kalender-Hover */
+  .calendar-tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    max-width: 260px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    pointer-events: none;
+    display: none;
+    transition: opacity 0.2s ease;
+  }
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="https://image.pngaaa.com/561/898561-middle.png" alt="Logo" />
-      <h1>Meine To-Do's</h1>
+<div class="container">
+  <div class="header">
+    <img src="https://image.pngaaa.com/561/898561-middle.png" alt="Logo" />
+    <h1>Meine To-Do's</h1>
+  </div>
+  <div class="content">
+    <div style="flex:1 1 100%;">
+      <button id="show-form-btn">➕ Hinzufügen</button>
+      <div class="input-form" id="input-form">
+        <input type="text" id="todo-input" placeholder="Titel eingeben..." />
+        <input type="date" id="todo-date" />
+        <div style="display:flex; gap:10px;">
+          <input type="time" id="todo-start" /> 
+          <input type="time" id="todo-end" />
+        </div>
+        <select id="todo-status">
+          <option value="offen">Offen</option>
+          <option value="erledigt">Erledigt</option>
+        </select>
+        <label><input type="checkbox" id="todo-urgent" /> Dringlich</label>
+        <div style="display:flex; gap:10px;">
+          <button id="save-btn">Speichern</button>
+          <button id="cancel-btn" type="button">Abbrechen</button>
+          <button id="delete-btn" type="button" style="display:none; background:#ff4d4d;">Löschen</button>
+        </div>
+      </div>
     </div>
-    <div class="content">
-      <div style="flex:1 1 100%;">
-        <button id="show-form-btn">➕ Hinzufügen</button>
-        <div class="input-form" id="input-form">
-          <input type="text" id="todo-input" placeholder="Titel eingeben..." />
-          <input type="date" id="todo-date" />
-          <div style="display:flex; gap:10px;">
-            <input type="time" id="todo-start" /> 
-            <input type="time" id="todo-end" />
-          </div>
-          <select id="todo-status">
+
+    <div class="views">
+      <div class="list-view">
+        <h3>Listenansicht</h3>
+        <div class="filter-container">
+          <label for="filter-date">Datum:</label>
+          <input type="date" id="filter-date" />
+          <label for="filter-status">Status:</label>
+          <select id="filter-status">
+            <option value="alle">Alle</option>
             <option value="offen">Offen</option>
             <option value="erledigt">Erledigt</option>
           </select>
-          <label>
-            <input type="checkbox" id="todo-urgent" /> Dringlich
-          </label>
-          <div style="display:flex; gap:10px;">
-            <button id="save-btn">Speichern</button>
-            <button id="cancel-btn" type="button">Abbrechen</button>
-            <button id="delete-btn" type="button" style="display:none; background:#ff4d4d;">Löschen</button>
-          </div>
+          <button id="clear-filter">Alle anzeigen</button>
         </div>
+        <ul id="todo-list"></ul>
       </div>
-
-      <div class="views">
-        <div class="list-view">
-          <h3>Listenansicht</h3>
-          <div class="filter-container">
-            <label for="filter-date">Datum:</label>
-            <input type="date" id="filter-date" />
-            <label for="filter-status">Status:</label>
-            <select id="filter-status">
-              <option value="alle">Alle</option>
-              <option value="offen">Offen</option>
-              <option value="erledigt">Erledigt</option>
-            </select>
-            <button id="clear-filter">Alle anzeigen</button>
-          </div>
-          <ul id="todo-list"></ul>
-        </div>
-        <div class="calendar-view">
-          <h3>Kalenderansicht</h3>
-          <div id="calendar"></div>
-        </div>
+      <div class="calendar-view">
+        <h3>Kalenderansicht</h3>
+        <div id="calendar"></div>
       </div>
     </div>
   </div>
+</div>
+
+<div id="calendar-tooltip" class="calendar-tooltip"></div>
 
 <script>
 const showFormBtn = document.getElementById('show-form-btn');
@@ -220,6 +238,7 @@ const endInput = document.getElementById('todo-end');
 const statusInput = document.getElementById('todo-status');
 const urgentInput = document.getElementById('todo-urgent');
 const todoList = document.getElementById('todo-list');
+const tooltip = document.getElementById('calendar-tooltip');
 
 const filterDateInput = document.getElementById('filter-date');
 const filterStatusInput = document.getElementById('filter-status');
@@ -228,54 +247,49 @@ const clearFilterBtn = document.getElementById('clear-filter');
 let editId = null;
 let todos = (JSON.parse(localStorage.getItem('todos')) || []).map(t => ({ ...t, id: String(t.id) }));
 
-// Kalender init
+// Kalender
 let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
   initialView: 'dayGridMonth',
   locale: 'de',
-  height: 500,
+  height: 520,
   events: [],
+  dayCellDidMount: function(arg) {
+    arg.el.addEventListener("mouseenter", e => showDayTooltip(arg.date, e));
+    arg.el.addEventListener("mousemove", e => moveTooltip(e));
+    arg.el.addEventListener("mouseleave", hideTooltip);
+  },
   dayCellClassNames: function(arg) {
-    const day = arg.date.getDay(); 
+    const day = arg.date.getDay();
     if (day === 0 || day === 6) return ['weekend-day'];
     return [];
-  },
-  eventDidMount: function(info) {
-    let tooltip = document.createElement("div");
-    tooltip.style.position = "absolute";
-    tooltip.style.zIndex = "1000";
-    tooltip.style.background = "#333";
-    tooltip.style.color = "#fff";
-    tooltip.style.padding = "6px 10px";
-    tooltip.style.borderRadius = "8px";
-    tooltip.style.fontSize = "0.85rem";
-    tooltip.style.whiteSpace = "nowrap";
-    tooltip.style.pointerEvents = "none";
-    tooltip.style.display = "none";
-
-    tooltip.innerHTML = `
-      <b>${info.event.title}</b><br>
-      ${info.event.start ? info.event.start.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : ""}
-      ${info.event.end ? " - " + info.event.end.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : ""}
-    `;
-
-    document.body.appendChild(tooltip);
-
-    info.el.addEventListener("mouseenter", e => {
-      tooltip.style.display = "block";
-      tooltip.style.top = (e.pageY + 10) + "px";
-      tooltip.style.left = (e.pageX + 10) + "px";
-    });
-    info.el.addEventListener("mousemove", e => {
-      tooltip.style.top = (e.pageY + 10) + "px";
-      tooltip.style.left = (e.pageX + 10) + "px";
-    });
-    info.el.addEventListener("mouseleave", () => {
-      tooltip.style.display = "none";
-    });
   }
 });
 calendar.render();
 
+function showDayTooltip(date, e) {
+  const dateStr = date.toISOString().split("T")[0];
+  const dayTodos = todos.filter(t => t.date === dateStr);
+  if (dayTodos.length === 0) return;
+
+  tooltip.innerHTML = dayTodos.map(t => `
+    <div><b>${t.text}</b> ${t.start ? `(${t.start})` : ''} 
+      <div style="font-size:0.8rem; color:#ccc;">${t.status}${t.urgent ? ' ⚠️' : ''}</div>
+    </div>`).join("<hr style='border:none;border-top:1px solid #666;margin:6px 0;'>");
+
+  tooltip.style.display = "block";
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  tooltip.style.top = (e.pageY + 12) + "px";
+  tooltip.style.left = (e.pageX + 12) + "px";
+}
+
+function hideTooltip() {
+  tooltip.style.display = "none";
+}
+
+// Formularsteuerung
 showFormBtn.addEventListener('click', () => { form.style.display = 'flex'; showFormBtn.style.display = 'none'; });
 cancelBtn.addEventListener('click', resetForm);
 saveBtn.addEventListener('click', handleSave);
@@ -287,7 +301,6 @@ clearFilterBtn.addEventListener('click', () => {
   renderTodos();
 });
 
-// **Lösch-Button funktioniert jetzt**
 deleteFormBtn.addEventListener('click', () => {
   if (!editId) return;
   if (confirm("Wirklich löschen?")) {
@@ -369,7 +382,13 @@ function renderTodos() {
 
     let start = todo.date + (todo.start ? 'T'+todo.start : '');
     let end = todo.date + (todo.end ? 'T'+todo.end : '');
-    calendar.addEvent({ id: todo.id, title: todo.text, start, end, color: todo.urgent ? '#ff4d4d' : (todo.status==='offen'?'#5563DE':'#c1ffd7') });
+    calendar.addEvent({
+      id: todo.id,
+      title: todo.text,
+      start,
+      end,
+      color: todo.urgent ? '#ff4d4d' : (todo.status==='offen'?'#5563DE':'#55c57a')
+    });
   });
 }
 
