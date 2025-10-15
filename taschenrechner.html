@@ -1,356 +1,521 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taschenrechner mit gemischten Zahlen & Prozentrechnung</title>
-  <style>
-    body {
-      background-color: #f1f4f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .calculator {
-      background-color: #fff;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      width: 400px;
-    }
-    .display {
-      width: 100%;
-      height: 60px;
-      background: #222;
-      color: #0f0;
-      font-size: 1.5rem;
-      text-align: right;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      overflow-x: auto;
-    }
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.75rem;
-    }
-    button {
-      padding: 1rem;
-      font-size: 1.1rem;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background-color: #f0f0f0;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background-color: #ddd;
-    }
-    .operator {
-      background-color: #d0e8ff;
-    }
-    .equal {
-      background-color: #4caf50;
-      color: white;
-    }
-    .clear {
-      background-color: #ff6b6b;
-      color: white;
-    }
-    .convert {
-      background-color: #ffc107;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Casio-style Wissenschaftlicher Taschenrechner</title>
+<style>
+  /* ---------- CASIO-LIKE STYLING ---------- */
+  :root{
+    --body-bg:#0f1113;
+    --panel:#1b1d20;
+    --panel-shine:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    --display-bg:#0b0c0e;
+    --display-text:#8bf79a;
+    --btn-num:#24272b;
+    --btn-func:#2e3440;
+    --btn-op:#0b67ff;     /* blue */
+    --btn-op-2:#ff8c00;   /* orange for shift-like */
+    --btn-eq:#0f9d58;
+    --btn-clear:#d94b4b;
+    --shadow: rgba(0,0,0,0.6);
+    --radius:10px;
+    --key-radius:8px;
+    --key-gap:8px;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    background: radial-gradient(1200px 600px at 10% 10%, #121215 0%, #0f1113 20%, #0c0c0e 100%);
+    color:#ddd;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .calc {
+    width: 420px;
+    background: linear-gradient(180deg,#151718 0%, #1b1d20 100%);
+    border-radius:18px;
+    padding:18px;
+    box-shadow: 0 20px 50px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  /* Top row: brand + mode */
+  .top {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .brand {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#cbd5e1;
+    font-weight:700;
+    letter-spacing:0.6px;
+  }
+  .brand .logo {
+    width:44px;height:32px;border-radius:6px;
+    background:linear-gradient(180deg,#31363b,#1f2225);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    font-weight:700;color:#fff;
+  }
+
+  .mode {
+    font-size:0.85rem;color:#9aa6b2;
+  }
+
+  /* Display */
+  .display-wrap {
+    border-radius:12px;
+    padding:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    margin-bottom:14px;
+    border: 1px solid rgba(255,255,255,0.02);
+  }
+  .display {
+    background: var(--display-bg);
+    color: var(--display-text);
+    font-family: "Courier New", monospace;
+    font-size: 1.5rem;
+    padding:12px 14px;
+    border-radius:8px;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    box-shadow: inset 0 -6px 24px rgba(0,0,0,0.6);
+    overflow-x:auto;
+  }
+  .secondary {
+    font-size:0.75rem;color:#9aa6b2;margin-top:6px;text-align:right;
+    min-height:16px;
+  }
+
+  /* keypad grid */
+  .keys {
+    margin-top:12px;
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--key-gap);
+  }
+
+  button.key {
+    border: none;
+    padding:12px 8px;
+    border-radius: var(--key-radius);
+    cursor:pointer;
+    font-size: 0.95rem;
+    color:#e6eef6;
+    background: linear-gradient(180deg, #2a2d30, #1f2123);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  button.key:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(0,0,0,0.5); }
+
+  /* different key types */
+  .k-num { background: linear-gradient(180deg,#2b2f33,#202225); color:#dbe8ff; }
+  .k-func { background: linear-gradient(180deg,#30353b,#222428); color:#b9c7d6; font-size:0.85rem; }
+  .k-op { background: linear-gradient(180deg,#0b67ff,#084bd1); color:white; font-weight:700; }
+  .k-op2 { background: linear-gradient(180deg,#ff9626,#d86b00); color:white; font-weight:700;}
+  .k-eq { background: linear-gradient(180deg,#14a74a,#0f7b38); color:white; font-weight:800; grid-column: span 2; }
+  .k-clear { background: linear-gradient(180deg,#e34f4f,#b73333); color:white; font-weight:800; }
+  .k-wide { grid-column: span 2; }
+
+  /* small text for function labels */
+  .lbl {
+    display:block;font-size:0.7rem;color:#c6d2dd;
+    opacity:0.9;margin-bottom:6px;
+  }
+
+  /* visual grid similar to casio */
+  .row-gap { height:8px; }
+
+  /* footer small note */
+  .footer { margin-top:12px; font-size:0.8rem;color:#8f9aa5; text-align:center;}
+</style>
 </head>
 <body>
-  <div class="calculator">
-    <div class="display" id="display">0</div>
-    <div class="buttons">
-      <button class="clear" onclick="clearDisplay()">C</button>
-      <button onclick="appendValue('(')">(</button>
-      <button onclick="appendValue(')')">)</button>
-      <button class="operator" onclick="appendValue('/')">÷</button>
-
-      <button onclick="appendValue('7')">7</button>
-      <button onclick="appendValue('8')">8</button>
-      <button onclick="appendValue('9')">9</button>
-      <button class="operator" onclick="appendValue('*')">×</button>
-
-      <button onclick="appendValue('4')">4</button>
-      <button onclick="appendValue('5')">5</button>
-      <button onclick="appendValue('6')">6</button>
-      <button class="operator" onclick="appendValue('-')">−</button>
-
-      <button onclick="appendValue('1')">1</button>
-      <button onclick="appendValue('2')">2</button>
-      <button onclick="appendValue('3')">3</button>
-      <button class="operator" onclick="appendValue('+')">+</button>
-
-      <button onclick="appendValue('0')">0</button>
-      <button onclick="appendValue(',')">,</button>
-      <button onclick="square()">x²</button>
-      <button onclick="squareRoot()">√</button>
-
-      <button class="convert" onclick="toFraction()">→ Bruch</button>
-      <button class="convert" onclick="toDecimal()">→ Dezimal</button>
-      <button class="convert" onclick="toMixed()">→ Gemischt</button>
-      <button class="operator" onclick="appendValue('%')">%</button>
-
-      <button class="equal" onclick="calculate()">=</button>
+  <div class="calc" role="application" aria-label="Casio-style wissenschaftlicher Taschenrechner">
+    <div class="top">
+      <div class="brand"><div class="logo">CAS</div> fx-Modern</div>
+      <div class="mode">MODE: <span id="modeText">DEG</span></div>
     </div>
+
+    <div class="display-wrap">
+      <div id="display" class="display" aria-live="polite">0</div>
+      <div id="secondary" class="secondary"></div>
+    </div>
+
+    <div class="keys" id="keys">
+      <!-- Row 1 -->
+      <button class="key k-clear" data-action="all-clear">AC</button>
+      <button class="key k-func" data-action="del">DEL</button>
+      <button class="key k-func" data-action="undo">UNDO</button>
+      <button class="key k-func" data-action="ans">ANS</button>
+      <button class="key k-func" data-action="mode">DEG</button>
+      <button class="key k-func" data-action="pi">π</button>
+
+      <!-- Row 2 -->
+      <button class="key k-func" data-input="sin(">sin</button>
+      <button class="key k-func" data-input="cos(">cos</button>
+      <button class="key k-func" data-input="tan(">tan</button>
+      <button class="key k-func" data-input="ln(">ln</button>
+      <button class="key k-func" data-input="log(">log</button>
+      <button class="key k-func" data-input="(">(</button>
+
+      <!-- Row 3 -->
+      <button class="key k-func" data-input="asin(">sin⁻¹</button>
+      <button class="key k-func" data-input="acos(">cos⁻¹</button>
+      <button class="key k-func" data-input="atan(">tan⁻¹</button>
+      <button class="key k-func" data-input="exp(">eˣ</button>
+      <button class="key k-func" data-action="fact">x!</button>
+      <button class="key k-func" data-input=")">)</button>
+
+      <!-- Row 4 -->
+      <button class="key k-num" data-input="7">7</button>
+      <button class="key k-num" data-input="8">8</button>
+      <button class="key k-num" data-input="9">9</button>
+      <button class="key k-op" data-input="÷">÷</button>
+      <button class="key k-op2" data-action="pow">xʸ</button>
+      <button class="key k-func" data-action="inv">1/x</button>
+
+      <!-- Row 5 -->
+      <button class="key k-num" data-input="4">4</button>
+      <button class="key k-num" data-input="5">5</button>
+      <button class="key k-num" data-input="6">6</button>
+      <button class="key k-op" data-input="×">×</button>
+      <button class="key k-func" data-action="sqr">x²</button>
+      <button class="key k-func" data-action="sqrt">√</button>
+
+      <!-- Row 6 -->
+      <button class="key k-num" data-input="1">1</button>
+      <button class="key k-num" data-input="2">2</button>
+      <button class="key k-num" data-input="3">3</button>
+      <button class="key k-op" data-input="-">−</button>
+      <button class="key k-func" data-action="frac">→Frac</button>
+      <button class="key k-func" data-action="dec">→Dec</button>
+
+      <!-- Row 7 -->
+      <button class="key k-num" data-input="0">0</button>
+      <button class="key k-num" data-input=".">.</button>
+      <button class="key k-func" data-input="%">%</button>
+      <button class="key k-op" data-input="+">+</button>
+      <button class="key k-func" data-action="mix">→Mix</button>
+      <button class="key k-eq" data-action="equals">=</button>
+    </div>
+
+    <div class="footer">Casio-style • DEG/RAD trig • Undo = letzter Tastendruck</div>
   </div>
 
-  <script>
-    const display = document.getElementById('display');
-    let rawInput = '';
-    let shouldResetDisplay = false;
+<script>
+/* ------------- LOGIK ------------- */
+/* State */
+const displayEl = document.getElementById('display');
+const secondaryEl = document.getElementById('secondary');
+const modeText = document.getElementById('modeText');
+let raw = '';               // input buffer shown in display (string)
+let lastKey = null;         // last pressed key (char or action)
+let lastRawBeforeKey = '';  // store for undo of last keypress
+let degMode = true;         // DEG true, RAD false
+let lastAnswer = null;      // ANS
+let historyStack = [];      // optional history of whole expressions (not required)
+const MAX_UNDO_STACK = 1;   // we only undo last keypress as requested
 
-    function appendValue(val) {
-      if (display.textContent === '0' || display.textContent === 'Fehler' || shouldResetDisplay) {
-        rawInput = val;
-      } else {
-        rawInput += val;
+/* helper wrappers for trig respecting DEG/RAD */
+function sinWrap(x){ return degMode ? Math.sin(x*Math.PI/180) : Math.sin(x); }
+function cosWrap(x){ return degMode ? Math.cos(x*Math.PI/180) : Math.cos(x); }
+function tanWrap(x){ return degMode ? Math.tan(x*Math.PI/180) : Math.tan(x); }
+function asinWrap(x){ const v = degMode ? Math.asin(x)*180/Math.PI : Math.asin(x); return v; }
+function acosWrap(x){ const v = degMode ? Math.acos(x)*180/Math.PI : Math.acos(x); return v; }
+function atanWrap(x){ const v = degMode ? Math.atan(x)*180/Math.PI : Math.atan(x); return v; }
+
+/* utility: replace display characters to evaluable expression */
+function transformForEval(expr){
+  let t = expr.replace(/\s+/g,'');
+  t = t.replace(/π/g, 'PI');
+  t = t.replace(/÷/g, '/');
+  t = t.replace(/×/g, '*');
+  t = t.replace(/−/g, '-');
+  t = t.replace(/,/g, '.');
+  t = t.replace(/\^/g, '**'); // if user inserts ^ via some action
+  // function aliases: map ln->Math.log, log->log10, exp(x)->Math.exp(x)
+  t = t.replace(/ln\(/g,'Math.log(');
+  t = t.replace(/log\(/g,'log10(');
+  // pow: we will translate xʸ action to ** by inserting '**(' and ')', but easier: action will insert '**'
+  // percent handling: convert n% to (n/100)
+  t = t.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+  return t;
+}
+
+/* Evaluate expression safely with helper functions in scope */
+function evaluateExpression(expr){
+  const transformed = transformForEval(expr);
+  // log10 fallback
+  const log10 = Math.log10 ? Math.log10 : (x)=>Math.log(x)/Math.LN10;
+  // Create function with wrappers in parameter list
+  try {
+    const fn = new Function(
+      'sin','cos','tan','asin','acos','atan','PI','E','log10',
+      'pow','sqrt','abs','round','floor','ceil',
+      'return (' + transformed + ');'
+    );
+    const value = fn(sinWrap, cosWrap, tanWrap, asinWrap, acosWrap, atanWrap, Math.PI, Math.E, log10, Math.pow, Math.sqrt, Math.abs, Math.round, Math.floor, Math.ceil);
+    return value;
+  } catch (e){
+    throw new Error('EvalError');
+  }
+}
+
+/* formatting for display (de-DE style) */
+function fmtNumber(n){
+  if (n === null || n === undefined) return '';
+  if (!isFinite(n)) return 'Fehler';
+  // try integer display if integer
+  if (Math.abs(n) > 1e12 || Math.abs(n) < 1e-12 && n!==0){
+    return n.toExponential(10);
+  }
+  const hasFraction = Math.abs(n - Math.trunc(n)) > 1e-12;
+  if (!hasFraction) return n.toLocaleString('de-DE');
+  // limit decimals
+  return Number(n.toFixed(10)).toLocaleString('de-DE');
+}
+
+/* fraction conversion (converge via continued fraction) */
+function decimalToFraction(decimal){
+  const tolerance = 1.0E-10;
+  let x = Math.abs(decimal);
+  let h1=1,h2=0,k1=0,k2=1,b=x;
+  let a;
+  do{
+    a = Math.floor(b);
+    let aux = h1; h1 = a*h1 + h2; h2 = aux;
+    aux = k1; k1 = a*k1 + k2; k2 = aux;
+    b = 1/(b - a);
+  } while (Math.abs(x - h1/k1) > x * tolerance);
+  const sign = decimal < 0 ? '-' : '';
+  return `${sign}${h1}/${k1}`;
+}
+function toMixedNumber(value){
+  const whole = Math.trunc(value);
+  const remainder = Math.abs(value - whole);
+  if (remainder < 1e-12) return `${whole}`;
+  const frac = decimalToFraction(remainder);
+  return `${whole} ${frac}`;
+}
+
+/* UI updates */
+function render(){
+  displayEl.textContent = raw || '0';
+  secondaryEl.textContent = ''; // could show lastAnswer etc
+  modeText.textContent = degMode ? 'DEG' : 'RAD';
+}
+
+/* Undo last keypress: revert raw to previous before last key */
+function undoLastKey(){
+  if (lastRawBeforeKey !== undefined){
+    raw = lastRawBeforeKey;
+    lastRawBeforeKey = '';
+    render();
+  }
+}
+
+/* key processing */
+function pushKeyInput(ch){
+  // record state for undo (only last key)
+  lastRawBeforeKey = raw;
+  raw += ch;
+  lastKey = ch;
+  render();
+}
+
+/* actions */
+function allClear(){
+  lastRawBeforeKey = raw;
+  raw = '';
+  lastKey = 'AC';
+  render();
+}
+function delOne(){
+  lastRawBeforeKey = raw;
+  raw = raw.slice(0,-1);
+  lastKey = 'DEL';
+  render();
+}
+function pressEquals(){
+  // store last raw for undo as well
+  lastRawBeforeKey = raw;
+  try {
+    const val = evaluateExpression(raw);
+    if (!isFinite(val)) throw new Error();
+    lastAnswer = val;
+    raw = String(val).replace('.',',');
+    lastKey = '=';
+    render();
+  } catch(e){
+    raw = 'Fehler';
+    lastKey = '=';
+    render();
+    // after showing error, clear after short time
+    setTimeout(()=>{ raw = ''; render(); }, 1200);
+  }
+}
+
+/* special actions implemented by buttons */
+function pressPi(){ pushKeyInput('π'); }
+function pressAns(){ if(lastAnswer!==null) pushKeyInput(String(lastAnswer).replace('.',',')); }
+function toggleMode(){ degMode = !degMode; render(); }
+function pressPow(){ // insert ** for exponent
+  lastRawBeforeKey = raw;
+  raw += '^'; // we'll transform ^ to **
+  lastKey = 'pow';
+  render();
+}
+function pressSqr(){ lastRawBeforeKey = raw; raw += '^2'; lastKey='sqr'; render(); }
+function pressSqrt(){ lastRawBeforeKey = raw; raw += 'sqrt('; lastKey='sqrt'; render(); }
+function pressInv(){ lastRawBeforeKey = raw; raw += '1/('; lastKey='inv'; render(); }
+function pressFact(){
+  // factorial: evaluate current expression then compute factorial integer
+  lastRawBeforeKey = raw;
+  try {
+    const v = evaluateExpression(raw);
+    const n = Math.trunc(v);
+    if (n<0 || n>170) throw new Error();
+    let f=1;
+    for(let i=2;i<=n;i++) f*=i;
+    raw = String(f).replace('.',',');
+    lastKey='fact';
+    render();
+  } catch(e){
+    raw='Fehler'; render(); setTimeout(()=>{raw='';render();},1200);
+  }
+}
+function pressSqrBtn(){ pushKeyInput('^2'); }
+function pressExp(){ pushKeyInput('exp('); }
+function pressPercent(){ pushKeyInput('%'); }
+
+/* conversion actions */
+function convertToFraction(){
+  try {
+    const val = evaluateExpression(raw);
+    const frac = decimalToFraction(val);
+    lastRawBeforeKey = raw;
+    raw = frac;
+    render();
+  } catch {
+    raw='Fehler'; render(); setTimeout(()=>{raw='';render();},1200);
+  }
+}
+function convertToDecimal(){
+  try {
+    // if raw is a fraction like "a/b" or "w a/b"
+    let txt = raw.trim();
+    if (txt.includes(' ')){ // mixed like "3 1/2"
+      const [whole, rest] = txt.split(' ',2);
+      if (rest.includes('/')){
+        const [n,d] = rest.split('/');
+        const val = Number(whole) + Number(n)/Number(d);
+        lastRawBeforeKey = raw;
+        raw = String(val).replace('.',',');
+        render(); return;
       }
-      shouldResetDisplay = false;
-      updateDisplay();
     }
-
-    function clearDisplay() {
-      rawInput = '';
-      display.textContent = '0';
-      shouldResetDisplay = false;
+    if (txt.includes('/')){
+      const [n,d] = txt.split('/');
+      const val = Number(n)/Number(d);
+      lastRawBeforeKey = raw;
+      raw = String(val).replace('.',',');
+      render(); return;
     }
+    // else try eval
+    const val = evaluateExpression(raw);
+    lastRawBeforeKey = raw;
+    raw = String(val).replace('.',',');
+    render();
+  } catch {
+    raw='Fehler'; render(); setTimeout(()=>{raw='';render();},1200);
+  }
+}
+function convertToMixed(){
+  try {
+    const val = evaluateExpression(raw);
+    const mixed = toMixedNumber(val);
+    lastRawBeforeKey = raw;
+    raw = mixed;
+    render();
+  } catch {
+    raw='Fehler'; render(); setTimeout(()=>{raw='';render();},1200);
+  }
+}
 
-    function updateDisplay() {
-      // Angepasste Erkennung von Zahlen inkl. führender Nullen, Komma und Dezimalteil
-      const formatted = rawInput.replace(/(\d*,?\d*)/g, match => formatNumberString(match));
-      display.textContent = formatted || '0';
+/* wire up keys */
+document.getElementById('keys').addEventListener('click', (ev)=>{
+  const btn = ev.target.closest('button.key');
+  if(!btn) return;
+  const inpt = btn.getAttribute('data-input');
+  const action = btn.getAttribute('data-action');
+
+  if(inpt){
+    // numeric or symbol
+    // translate some symbols to internal
+    if(inpt === '×') pushKeyInput('×');
+    else if(inpt === '÷') pushKeyInput('÷');
+    else pushKeyInput(inpt);
+    return;
+  }
+  if(action){
+    switch(action){
+      case 'all-clear': allClear(); break;
+      case 'del': delOne(); break;
+      case 'undo': undoLastKey(); break;
+      case 'ans': pressAns(); break;
+      case 'mode': toggleMode(); break;
+      case 'pi': pressPi(); break;
+      case 'pow': pressPow(); break;
+      case 'fact': pressFact(); break;
+      case 'sqr': pressSqr; /* not used */ break;
+      case 'sqrt': pressSqrt(); break;
+      case 'inv': pressInv(); break;
+      case 'frac': convertToFraction(); break;
+      case 'dec': convertToDecimal(); break;
+      case 'mix': convertToMixed(); break;
+      case 'equals': pressEquals(); break;
+      default: break;
     }
+  }
+});
 
-    function formatNumberString(str) {
-      if (str === '') return '';
-      // Falls Dezimalzahl mit führender Null, z.B. '0,02' oder ',02'
-      if (str.includes(',')) {
-        const [intPart, decPart] = str.split(',');
-        // intPart == "": Nutzer hat nur ',02' eingegeben, intPart == "0": '0,02'
-        // Dezimalteil bleibt erhalten
-        let sanitizedIntPart = intPart.length ? String(Number(intPart)) : '0';
-        // Nachkommastellen original übernehmen
-        return decPart !== undefined ? `${sanitizedIntPart},${decPart}` : sanitizedIntPart;
-      } else {
-        // Ganze Zahl, führende Nullen entfernen
-        return String(Number(str));
-      }
-    }
+/* keyboard support (basic) */
+document.addEventListener('keydown', (e)=>{
+  if(e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { undoLastKey(); e.preventDefault(); return; }
+  if (e.key === 'Enter') { pressEquals(); e.preventDefault(); return; }
+  if (e.key === 'Backspace') { delOne(); e.preventDefault(); return; }
+  const map = {
+    '/':'÷','*':'×','-':'−','+':'+','(':'(',')':')','.':'.'
+  };
+  if (map[e.key]) { pushKeyInput(map[e.key]); e.preventDefault(); return; }
+  if (!isNaN(e.key)) { pushKeyInput(e.key); e.preventDefault(); return; }
+});
 
-    function formatNumber(number) {
-      return number.toLocaleString('de-DE', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 10
-      });
-    }
+/* Rendering initially */
+render();
 
-    function preprocessMixedNumbers(expr) {
-      return expr.replace(/(\d+)\s+(\d+\/\d+)/g, (_, whole, fraction) => {
-        return `${whole}+${fraction}`;
-      });
-    }
+/* ---- Expose some helper functions so transformed eval can call them if strings contain names ----
+   We put sin, cos, etc function names in scope by prefixing them in the Function call (see evaluateExpression)
+   The transform replaces ln->Math.log and log->log10; trig functions call the wrappers sinWrap etc. 
+   For convenience, allow sqrt(...) by accepting "sqrt(" token (we handle via Math.sqrt in Function param).
+*/
 
-    function processPercent(expr) {
-      return expr.replace(/(\d+(?:[.,]\d+)?)(\s*[%])/g, (_, number) => {
-        const normalized = number.replace(',', '.');
-        return `(${normalized} / 100)`;
-      });
-    }
+/* Quick test: allow clicking 'x²' button by inserting ^2 directly from its action. 
+   We included some actions above. */
 
-    function autoBracketExpression(expr) {
-      const tokens = expr.match(/(\d+(?:[.,]\d+)?|\+|\-|\*|\/|\(|\)|%)/g);
-      if (!tokens) return expr;
-
-      const output = [];
-      let i = 0;
-
-      while (i < tokens.length) {
-        if ((tokens[i] === '+' || tokens[i] === '-') && i + 3 < tokens.length) {
-          const a = tokens[i + 1];
-          const op = tokens[i + 2];
-          const b = tokens[i + 3];
-          if ((op === '*' || op === '/')) {
-            output.push(tokens[i]);
-            output.push('(');
-            output.push(a);
-            output.push(op);
-            output.push(b);
-            output.push(')');
-            i += 4;
-            continue;
-          }
-        }
-        output.push(tokens[i]);
-        i++;
-      }
-
-      return output.join('');
-    }
-
-    function evalExpression(expr) {
-      let clean = expr
-        .replace(/\./g, '') // Tausenderpunkte entfernen
-        .replace(/,/g, '.'); // Komma in Punkt
-
-      clean = preprocessMixedNumbers(clean);
-      clean = processPercent(clean); // Prozent umwandeln
-      clean = autoBracketExpression(clean); // Punkt-vor-Strich Klammern
-      clean = clean.replace(/[^-()\d/*+.%]/g, '');
-
-      return Function('"use strict"; return (' + clean + ')')();
-    }
-
-    function calculate() {
-      try {
-        let result = evalExpression(rawInput);
-        if (!isFinite(result)) throw new Error();
-        display.textContent = formatNumber(result);
-        rawInput = result.toString().replace('.', ',');
-        shouldResetDisplay = true;
-      } catch {
-        display.textContent = "Fehler";
-        rawInput = '';
-        shouldResetDisplay = true;
-      }
-    }
-
-    function square() {
-      try {
-        let value = evalExpression(rawInput);
-        display.textContent = formatNumber(value ** 2);
-        rawInput = (value ** 2).toString().replace('.', ',');
-        shouldResetDisplay = true;
-      } catch {
-        display.textContent = "Fehler";
-        rawInput = '';
-        shouldResetDisplay = true;
-      }
-    }
-
-    function squareRoot() {
-      try {
-        let value = evalExpression(rawInput);
-        if (value < 0) throw new Error("Negative Zahl");
-        display.textContent = formatNumber(Math.sqrt(value));
-        rawInput = Math.sqrt(value).toString().replace('.', ',');
-        shouldResetDisplay = true;
-      } catch {
-        display.textContent = "Fehler";
-        rawInput = '';
-        shouldResetDisplay = true;
-      }
-    }
-
-    function toFraction() {
-      try {
-        let value = parseFloat(evalExpression(rawInput));
-        if (!isFinite(value)) throw new Error();
-        const frac = decimalToFraction(value);
-        display.textContent = frac;
-        rawInput = frac;
-        shouldResetDisplay = true;
-      } catch {
-        display.textContent = "Fehler";
-        rawInput = '';
-        shouldResetDisplay = true;
-      }
-    }
-
-    function toMixed() {
-      try {
-        let value = parseFloat(evalExpression(rawInput));
-        if (!isFinite(value)) throw new Error();
-        const mixed = toMixedNumber(value);
-        display.textContent = mixed;
-        rawInput = mixed;
-        shouldResetDisplay = true;
-      } catch {
-        display.textContent = "Fehler";
-        rawInput = '';
-        shouldResetDisplay = true;
-      }
-    }
-
-    function toDecimal() {
-      try {
-        const frac = rawInput.trim();
-        if (frac.includes('/') && /^[\d.,]+\/[\d.,]+$/.test(frac)) {
-          const parts = frac.replace(/\./g, '').replace(/,/g, '.').split('/');
-          const num = parseFloat(parts[0]);
-          const den = parseFloat(parts);
-          if (den === 0) throw new Error();
-          const result = num / den;
-          display.textContent = formatNumber(result);
-          rawInput = result.toString().replace('.', ',');
-          shouldResetDisplay = true;
-        }
-      } catch {
-        display.textContent = "Fehler";
-        rawInput = '';
-        shouldResetDisplay = true;
-      }
-    }
-
-    function decimalToFraction(decimal) {
-      const tolerance = 1.0E-8;
-      let h1 = 1, h2 = 0;
-      let k1 = 0, k2 = 1;
-      let b = decimal;
-      do {
-        let a = Math.floor(b);
-        let aux = h1;
-        h1 = a * h1 + h2;
-        h2 = aux;
-        aux = k1;
-        k1 = a * k1 + k2;
-        k2 = aux;
-        b = 1 / (b - a);
-      } while (Math.abs(decimal - h1 / k1) > decimal * tolerance);
-      return `${h1}/${k1}`;
-    }
-
-    function toMixedNumber(decimal) {
-      const whole = Math.floor(decimal);
-      const remainder = decimal - whole;
-      if (remainder < 1e-8) return whole.toString();
-      const frac = decimalToFraction(remainder);
-      return `${whole} ${frac}`;
-    }
-
-    document.addEventListener("keydown", function(e) {
-      const key = e.key;
-      if (!isNaN(key) || ['+', '-', '*', '/', '%', '(', ')'].includes(key)) {
-        appendValue(key);
-      } else if (key === ',' || key === '.') {
-        appendValue(',');
-      } else if (key === 'Enter' || key === '=') {
-        e.preventDefault();
-        calculate();
-      } else if (key === 'Backspace') {
-        if (rawInput.length > 1) {
-          rawInput = rawInput.slice(0, -1);
-        } else {
-          rawInput = '';
-        }
-        updateDisplay();
-      } else if (key.toLowerCase() === 'r') {
-        squareRoot();
-      } else if (key === '^') {
-        square();
-      } else if (key.toLowerCase() === 'c') {
-        clearDisplay();
-      }
-    });
-  </script>
+</script>
 </body>
 </html>
